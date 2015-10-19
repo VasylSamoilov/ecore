@@ -1,0 +1,3 @@
+[submodule "dependencies/coreos-vagrant"]
+	path = dependencies/coreos-vagrant
+	url = https://github.com/coreos/coreos-vagrant
