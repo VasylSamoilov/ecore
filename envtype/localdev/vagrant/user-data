@@ -5,8 +5,21 @@ coreos:
   units:
   - name: etcd2.service
     command: start
+  - name: zookeeper.service
+    command: start
+    content: |
+      [Unit]
+      Description=Core Zookeeper service
+      Author=Oleksii Dzhulai
+      After=docker.service
+
+      [Service]
+      Restart=always
+      ExecStartPre=-"/usr/bin/docker rm zookeeper"
+      ExecStart=/usr/bin/docker run -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
+      ExecStop=/usr/bin/docker stop -t 2 zookeeper
   etcd2:
-    discovery: https://discovery.etcd.io/c71171e243a3ad0dfa05e46e30b3921b
+    discovery: https://discovery.etcd.io/b6927491f6338620e10993f7980e2ff0
     advertise-client-urls: http://$public_ipv4:2379
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
