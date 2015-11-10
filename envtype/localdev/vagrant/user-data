@@ -15,11 +15,11 @@ coreos:
 
       [Service]
       Restart=always
-      ExecStartPre=-"/usr/bin/docker rm zookeeper"
-      ExecStart=/usr/bin/docker run -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
+      ExecStartPre=-/usr/bin/docker rm zookeeper
+      ExecStart=/usr/bin/docker run -d -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
       ExecStop=/usr/bin/docker stop -t 2 zookeeper
   etcd2:
-    discovery: https://discovery.etcd.io/b6927491f6338620e10993f7980e2ff0
+    discovery: https://discovery.etcd.io/e2e0c334c2499d027411981aee4f148f
     advertise-client-urls: http://$public_ipv4:2379
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
