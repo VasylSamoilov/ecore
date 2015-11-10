@@ -12,14 +12,29 @@ coreos:
       Description=Core Zookeeper service
       Author=Oleksii Dzhulai
       After=docker.service
+      Requires=docker.service
 
       [Service]
       Restart=always
       ExecStartPre=-/usr/bin/docker rm zookeeper
-      ExecStart=/usr/bin/docker run -d -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
+      ExecStart=/usr/bin/docker run -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
       ExecStop=/usr/bin/docker stop -t 2 zookeeper
+  - name: mesos-master.service
+    command: start
+    content: |
+      [Unit]
+      Description=Mesos master service
+      Author=Oleksii Dzhulai
+      After=zookeeper.service
+      Requires=zookeeper.service
+
+      [Service]
+      Restart=always
+      ExecStartPre=-/usr/bin/docker rm mesos-master
+      ExecStart=/usr/bin/docker run --net=host -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=1 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.23.0-ubuntu-14.04
+      ExecStop=/usr/bin/docker stop -t 2 mesos-master
   etcd2:
-    discovery: https://discovery.etcd.io/e2e0c334c2499d027411981aee4f148f
+    discovery: https://discovery.etcd.io/0115e9dfd83af0a46ee9835aa20bc7e7
     advertise-client-urls: http://$public_ipv4:2379
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
