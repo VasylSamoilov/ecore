@@ -55,7 +55,7 @@ end
 #$image_version = "current"
 
 # Official CoreOS channel from which updates should be downloaded
-#$update_channel='alpha'
+$update_channel='beta'
 
 # Log the serial consoles of CoreOS VMs to log/
 # Enable by setting value to true, disable with false
@@ -77,7 +77,7 @@ end
 
 # Customize VMs
 #$vm_gui = false
-#$vm_memory = 1024
+$vm_memory = 2024
 #$vm_cpus = 1
 
 # Share additional folders to the CoreOS VMs
@@ -88,4 +88,4 @@ end
 $shared_folders = {'/tmp' => '/var/lib/docker'}
 
 # Enable port forwarding from guest(s) to host machine, syntax is: { 80 => 8080 }, auto correction is enabled by default.
-#$forwarded_ports = {}
+$forwarded_ports = {18080 => 8080, 15050 => 5050}
