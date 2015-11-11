@@ -10,7 +10,7 @@ coreos:
       Description=Core Zookeeper service
       Author=Oleksii Dzhulai
       After=docker.service
-      Requires=docker.service
+      Before=mesos-master.service
 
       [Service]
       Restart=always
@@ -24,7 +24,6 @@ coreos:
       Description=Mesos master service
       Author=Oleksii Dzhulai
       After=zookeeper.service
-      Requires=zookeeper.service
 
       [Service]
       Restart=always
@@ -37,8 +36,7 @@ coreos:
       [Unit]
       Description=Marathon service
       Author=Oleksii Dzhulai
-      After=mesos-master.service
-      Requires=mesos-master.service
+      After=mesos-master.service zookeeper.service
 
       [Service]
       Restart=always
@@ -51,8 +49,7 @@ coreos:
       [Unit]
       Description=Mesos slave service
       Author=Oleksii Dzhulai
-      After=zookeeper.service
-      Requires=zookeeper.service
+      After=zookeeper.service mesos-master.service
 
       [Service]
       Restart=always
