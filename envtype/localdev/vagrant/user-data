@@ -3,8 +3,6 @@
 ---
 coreos:
   units:
-  - name: etcd2.service
-    command: start
   - name: zookeeper.service
     command: start
     content: |
@@ -45,11 +43,27 @@ coreos:
       [Service]
       Restart=always
       ExecStartPre=-/usr/bin/docker rm marathon
-      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=172.17.8.101 -e MARATHON_HOSTNAME=$public_ipv4 -e MARATHON_HTTPS_ADDRESS=$public_ipv4 -e MARATHON_HTTP_ADDRESS=$public_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
+      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$public_ipv4 -e MARATHON_HOSTNAME=$public_ipv4 -e MARATHON_HTTPS_ADDRESS=$public_ipv4 -e MARATHON_HTTP_ADDRESS=$public_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
       ExecStop=/usr/bin/docker stop -t 2 marathon
-  etcd2:
-    discovery: https://discovery.etcd.io/4f8202f40358eed50b70fd25bb54a032
-    advertise-client-urls: http://$public_ipv4:2379
-    initial-advertise-peer-urls: http://$private_ipv4:2380
-    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
-    listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
+  - name: mesos-slave.service
+    command: start
+    content: |
+      [Unit]
+      Description=Mesos slave service
+      Author=Oleksii Dzhulai
+      After=zookeeper.service
+      Requires=zookeeper.service
+
+      [Service]
+      Restart=always
+      ExecStartPre=-/usr/bin/docker rm mesos-slave
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --name mesos-slave -p 5050:5050 mesoscloud/mesos-slave:0.24.1-ubuntu-14.04
+      ExecStop=/usr/bin/docker stop -t 2 mesos-master
+write_files:
+- path: /etc/systemd/coredump.conf
+  permissions: '0644'
+  owner: root
+  content: |
+    [Coredump]
+    Storage=none
+manage_etc_hosts: localhost
