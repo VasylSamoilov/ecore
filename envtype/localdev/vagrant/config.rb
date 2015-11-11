@@ -88,4 +88,3 @@ $vm_memory = 2024
 $shared_folders = {'/tmp' => '/var/lib/docker'}
 
 # Enable port forwarding from guest(s) to host machine, syntax is: { 80 => 8080 }, auto correction is enabled by default.
-$forwarded_ports = {18080 => 8080, 15050 => 5050}
