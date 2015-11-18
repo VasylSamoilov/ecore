@@ -65,7 +65,7 @@ vagrant up
 
 ## USE
 
-- If you have DCOS installed, just use ./cli script
+*If you have DCOS installed, just use ./cli script*
 
 ```
 $ ./cli --help
@@ -79,8 +79,8 @@ Usage:
     dcos [options] [<command>] [<args>...]
 ```
 
-- You can reach mesos and marathon natively also http://mesos_ip:5050 and http://mesos_ip:8080 respectively
-- You can obtain mesos ip as below:
+*Reach mesos and marathon natively also http://mesos_ip:5050 and http://mesos_ip:8080 respectively*
+*Obtain mesos ip as below:*
 
 ```
 vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}'
