@@ -1,4 +1,4 @@
-# My version of  Microservices-Infrastructure 
+# Ecore
 Not because of the hype, but because I love it!
 
 ##Objectives
