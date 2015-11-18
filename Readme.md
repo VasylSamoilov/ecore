@@ -19,7 +19,7 @@ Not because of the hype, but because I love it!
 * [Kubernetes](http://kubernetes.io) for the best docker orchestration
 * [Vault] (http://vaultproject.io) for managing secrets
 * [Consul](http://consul.io) for service discovery 
-* More comming ...
+* More coming ...
 
 ## Already available features
 
