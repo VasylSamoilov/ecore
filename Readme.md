@@ -24,13 +24,13 @@ Not because of the hype, but because I love it!
 ## Already available features
 
 Local vagrant single node environment with latest:
-	- CoreOS
-	- Zookeeper
-	- Mesos master 
-	- Mesos slave
-	- Consul
-	- Mesos consul
-	- DCOS cli
+* CoreOS
+* Zookeeper
+* Mesos master 
+* Mesos slave
+* Consul
+* Mesos consul
+* DCOS cli
 
 ## Quickstart 
 
