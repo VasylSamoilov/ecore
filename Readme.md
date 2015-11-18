@@ -36,10 +36,8 @@ Local vagrant single node environment with latest:
 
 *Prerequesits:*
 
-```
-- Vagrant 
-- [DCOS cli](http://docs.mesosphere.com/install/cli/),optional
-```
+* Vagrant 
+* [DCOS cli](http://docs.mesosphere.com/install/cli/),optional
 
 *Get the code:*
 
