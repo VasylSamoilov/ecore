@@ -1,3 +1,4 @@
+# Docker file for mesos slave container, normally no modification required
 FROM ubuntu:14.04
 
 RUN apt-get update && \

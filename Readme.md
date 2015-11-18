@@ -3,6 +3,7 @@ Not because of the hype, but because I love it!
 
 ##Objectives
 
+* The easiest way to rollout local mesos platform
 * Cloud Agnostic
 * Resource capacity is the only difference between environments
 * No static particioning 
@@ -19,3 +20,59 @@ Not because of the hype, but because I love it!
 * [Vault] (http://vaultproject.io) for managing secrets
 * [Consul](http://consul.io) for service discovery 
 * More comming ...
+
+## Already available features
+
+Local vagrant single node environment with latest:
+	- CoreOS
+	- Zookeeper
+	- Mesos master 
+	- Mesos slave
+	- Consul
+	- Mesos consul
+	- DCOS cli
+
+## Quickstart 
+
+0. Prerequesits:
+
+- Vagrant 
+- [DCOS cli](http://docs.mesosphere.com/install/cli/),optional
+
+1. Get the code:
+
+>  git clone git@github.com:nixlike/ecore.git && cd ecore/envtype/localdev/vagrant
+>  git submodule init 
+>  git submodule update
+
+2. Create folder for docker images persistance (can be amended to alterantive in config.rb):
+
+>  mkdir /tmp/ecore 
+
+3. Run the box:
+
+>  vagrant up
+
+4. Before using, make a cofee until docker is pulling images
+
+## USE
+
+- If you have DCOS installed, just use ./cli script
+
+```
+$ ./cli --help
+Command line utility for the Mesosphere Datacenter Operating
+System (DCOS)
+
+'dcos help' lists all available subcommands. See 'dcos <command> --help'
+to read about a specific subcommand.
+
+Usage:
+    dcos [options] [<command>] [<args>...]
+```
+
+- You can reach mesos and marathon natively also http://mesos_ip:5050 and http://mesos_ip:8080 respectively
+- You can obtain mesos ip as below:
+
+>  vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}'
+
