@@ -41,17 +41,23 @@ Local vagrant single node environment with latest:
 
 1. Get the code:
 
->  git clone git@github.com:nixlike/ecore.git && cd ecore/envtype/localdev/vagrant
->  git submodule init 
->  git submodule update
+```
+git clone git@github.com:nixlike/ecore.git && cd ecore/envtype/localdev/vagrant
+git submodule init 
+git submodule update
+```
 
 2. Create folder for docker images persistance (can be amended to alterantive in config.rb):
 
->  mkdir /tmp/ecore 
+```
+mkdir /tmp/ecore 
+```
 
 3. Run the box:
 
->  vagrant up
+```
+vagrant up
+```
 
 4. Before using, make a cofee until docker is pulling images
 
@@ -74,5 +80,6 @@ Usage:
 - You can reach mesos and marathon natively also http://mesos_ip:5050 and http://mesos_ip:8080 respectively
 - You can obtain mesos ip as below:
 
->  vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}'
-
+```
+vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}'
+```
