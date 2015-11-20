@@ -3,6 +3,28 @@
 ---
 coreos:
   units:
+  - name: pulldockerimages.service
+    command: start
+    content: |
+      [Unit]
+      Description=Pull docker images
+      Author=Oleksii Dzhulai
+      After=docker.service
+      Before=zookeeper.service
+      Before=meses-master.service
+      Before=marathon.service
+      Before=mesos-slave.service
+      Before=consul-server.service
+      Before=mesos-consul.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=-/usr/bin/docker pull mesoscloud/zookeeper:3.4.6-ubuntu-14.04 &
+      ExecStart=-/usr/bin/docker pull mesoscloud/mesos-master:0.24.1-ubuntu-14.04 &
+      ExecStart=-/usr/bin/docker pull mesoscloud/marathon:0.11.0-ubuntu-15.04 &
+      ExecStart=-/usr/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3 &
+      ExecStart=-/usr/bin/docker pull progrium/consul &
+      ExecStart=-/usr/bin/docker pull ciscocloud/mesos-consul &
   - name: zookeeper.service
     command: start
     content: |
@@ -10,12 +32,15 @@ coreos:
       Description=Core Zookeeper service
       Author=Oleksii Dzhulai
       After=docker.service
+      After=pulldockerimages.service
       Before=mesos-master.service
 
       [Service]
       Restart=always
+      RestartSec=5s
+      TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm zookeeper
-      ExecStart=/usr/bin/docker run -e MYID=1 --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
+      ExecStart=/usr/bin/docker run -e MYID=1 --rm=true --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
       ExecStop=/usr/bin/docker stop -t 2 zookeeper
   - name: mesos-master.service
     command: start
@@ -28,11 +53,9 @@ coreos:
       [Service]
       Restart=always
       RestartSec=5s
-      TimeoutSec=10s
+      TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm mesos-master
-      ExecStartPre=-/usr/bin/docker pull mesoscloud/mesos-master:0.24.1-ubuntu-14.04
-      ExecStart=/usr/bin/docker run --net=host -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=1 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
-      ExecStop=/usr/bin/docker stop -t 2 mesos-master
+      ExecStart=/usr/bin/docker run --net=host -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=1 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
   - name: marathon.service
     command: start
     content: |
@@ -43,10 +66,10 @@ coreos:
 
       [Service]
       Restart=always
+      RestartSec=5s
+      TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm marathon
-      ExecStartPre=-/usr/bin/docker pull mesoscloud/marathon:0.11.0-ubuntu-15.04
-      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$public_ipv4 -e MARATHON_HOSTNAME=$public_ipv4 -e MARATHON_HTTPS_ADDRESS=$public_ipv4 -e MARATHON_HTTP_ADDRESS=$public_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
-      ExecStop=/usr/bin/docker stop -t 2 marathon
+      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$public_ipv4 -e MARATHON_HOSTNAME=$public_ipv4 -e MARATHON_HTTPS_ADDRESS=$public_ipv4 -e MARATHON_HTTP_ADDRESS=$public_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon --rm=true --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
   - name: mesos-slave.service
     command: start
     content: |
@@ -58,11 +81,9 @@ coreos:
       [Service]
       Restart=always
       RestartSec=5s
-      TimeoutSec=10s
-      ExecStartPre=-/usr/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3
+      TimeoutSec=22min
       ExecStartPre=-/usr/bin/docker rm mesos-slave
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3
-      ExecStop=/usr/bin/docker stop -t 2 mesos-slave
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3
   - name: consul-server.service
     command: start
     content: |
@@ -74,11 +95,9 @@ coreos:
       [Service]
       Restart=always
       RestartSec=5s
-      TimeoutSec=10s
-      ExecStartPre=-/usr/bin/docker pull progrium/consul
+      TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm consul-master
-      ExecStart=/usr/bin/docker run -p 8400:8400 -p 8500:8500 -p 53:53/udp -h $private_ipv4 --name consul-master progrium/consul -server -bootstrap
-      ExecStop=/usr/bin/docker stop -t 2 consul-master
+      ExecStart=/usr/bin/docker run --rm=true -p 8400:8400 -p 8500:8500 -p 53:53/udp -h $private_ipv4 --name consul-master progrium/consul -server -bootstrap
   - name: mesos-consul.service
     command: start
     content: |
@@ -90,11 +109,9 @@ coreos:
       [Service]
       Restart=always
       RestartSec=5s
-      TimeoutSec=10s
-      ExecStartPre=-/usr/bin/docker pull ciscocloud/mesos-consul:latest
+      TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm mesos-consul
-      ExecStart=/usr/bin/docker run --net=host --name mesos-consul ciscocloud/mesos-consul:latest --zk=zk://$private_ipv4:2181/mesos
-      ExecStop=/usr/bin/docker stop -t 2 mesos-consul
+      ExecStart=/usr/bin/docker run --rm=true --net=host --name mesos-consul ciscocloud/mesos-consul:latest --zk=zk://$private_ipv4:2181/mesos
 write_files:
 - path: /etc/systemd/coredump.conf
   permissions: '0644'

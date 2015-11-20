@@ -1,0 +1,20 @@
+{
+  "id": "memcached",
+  "cpus": 0.3,
+  "mem": 150.0,
+  "instances": 1,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "memcached",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 11211 }
+      ]
+    }
+  },
+  "upgradeStrategy": {
+      "minimumHealthCapacity": 0
+  }
+
+}
