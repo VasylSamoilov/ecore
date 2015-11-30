@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/bin/bash 
 
-TARGET=$(vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}')
-CONFIG=/tmp/vagrantmesos.toml
+if [ -t 0 ] 
+ then
 
-cat << EOF >$CONFIG
+  TARGET=$(vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}')
+  CONFIG=/tmp/vagrantmesos.toml
+
+  cat << EOF >$CONFIG
 [core]
 dcos_url = "http://${TARGET%?}"
 reporting = false
@@ -19,5 +22,10 @@ sources = [ "https://github.com/mesosphere/universe/archive/version-1.x.zip",]
 cache = "/tmp/.dcos/cache"
 EOF
 
-DCOS_CONFIG=$CONFIG dcos $@
+  DCOS_CONFIG=$CONFIG dcos $@
 
+ else
+  input="-"
+  export json=$(cat $input)
+  DCOS_CONFIG=$CONFIG echo $json | dcos $@
+fi  

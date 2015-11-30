@@ -3,28 +3,6 @@
 ---
 coreos:
   units:
-  - name: pulldockerimages.service
-    command: start
-    content: |
-      [Unit]
-      Description=Pull docker images
-      Author=Oleksii Dzhulai
-      After=docker.service
-      Before=zookeeper.service
-      Before=meses-master.service
-      Before=marathon.service
-      Before=mesos-slave.service
-      Before=consul-server.service
-      Before=mesos-consul.service
-
-      [Service]
-      Type=oneshot
-      ExecStart=-/usr/bin/docker pull mesoscloud/zookeeper:3.4.6-ubuntu-14.04 &
-      ExecStart=-/usr/bin/docker pull mesoscloud/mesos-master:0.24.1-ubuntu-14.04 &
-      ExecStart=-/usr/bin/docker pull mesoscloud/marathon:0.11.0-ubuntu-15.04 &
-      ExecStart=-/usr/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3 &
-      ExecStart=-/usr/bin/docker pull progrium/consul &
-      ExecStart=-/usr/bin/docker pull ciscocloud/mesos-consul &
   - name: zookeeper.service
     command: start
     content: |
@@ -32,7 +10,6 @@ coreos:
       Description=Core Zookeeper service
       Author=Oleksii Dzhulai
       After=docker.service
-      After=pulldockerimages.service
       Before=mesos-master.service
 
       [Service]
@@ -41,7 +18,6 @@ coreos:
       TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm zookeeper
       ExecStart=/usr/bin/docker run -e MYID=1 --rm=true --name=zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 mesoscloud/zookeeper:3.4.6-ubuntu-14.04
-      ExecStop=/usr/bin/docker stop -t 2 zookeeper
   - name: mesos-master.service
     command: start
     content: |

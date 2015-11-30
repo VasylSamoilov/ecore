@@ -1,16 +1,21 @@
 {
   "id": "memcached",
   "cpus": 0.3,
-  "mem": 150.0,
-  "instances": 1,
+  "mem": 140.0,
+  "instances": 2,
   "container": {
     "type": "DOCKER",
     "docker": {
       "image": "memcached",
       "network": "BRIDGE",
       "portMappings": [
-        { "containerPort": 11211 }
-      ]
+        {
+          "containerPort": 11211,
+          "hostPort": 0,
+          "protocol": "tcp",
+          "servicePort": 5000
+        }
+       ]
     }
   },
   "upgradeStrategy": {
