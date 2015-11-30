@@ -5,7 +5,7 @@ $num_instances=1
 $new_discovery_url="https://discovery.etcd.io/new?size=#{$num_instances}"
 
 # To automatically replace the discovery token on 'vagrant up', uncomment
-# the lines below:
+# the lines below :
 #
 if File.exists?('user-data') && ARGV[0].eql?('up')
   require 'open-uri'
