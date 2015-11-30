@@ -10,7 +10,7 @@ apt-get update && \
 apt-get -y install mesos=0.24.1-0.2.35.ubuntu1404 wget
 
 # http://docs.docker.com/installation/ubuntulinux/
-RUN wget -O /usr/bin/docker  https://get.docker.com/builds/Linux/x86_64/docker-1.8.3&&chmod +x /usr/bin/docker
+RUN wget -O /usr/bin/docker  https://get.docker.com/builds/Linux/x86_64/docker-1.9.1&&chmod +x /usr/bin/docker
 
 CMD ["/usr/sbin/mesos-slave"]
 

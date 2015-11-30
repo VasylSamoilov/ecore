@@ -1,6 +1,6 @@
-[submodule "dependencies/coreos-vagrant"]
-	path = dependencies/coreos-vagrant
-	url = https://github.com/coreos/coreos-vagrant
 [submodule "dependencies/devstack-vagrant"]
 	path = dependencies/devstack-vagrant
 	url = https://github.com/openstack-dev/devstack-vagrant
+[submodule "dependencies/coreos-vagrant"]
+	path = dependencies/coreos-vagrant
+	url = https://github.com/nixlike/coreos-vagrant.git
