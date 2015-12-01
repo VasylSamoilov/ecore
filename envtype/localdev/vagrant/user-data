@@ -7,10 +7,56 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/0106f2ac45c0cee2ddbe513e2ce17235
+    discovery: https://discovery.etcd.io/bc6fd7c8acd6ef5011d37ef959266c86
   units:
   - name: etcd2.service
     command: start
+  - name: download-reqs.service
+    command: start
+    content: |-
+      [Unit]
+      Description=Download and unpack the prereqs
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      RemainAfterExit=yes
+      Type=oneshot
+      ExecStart=/usr/bin/mkdir -p /opt/bin
+      ExecStart=/usr/bin/wget -O /opt/bin/calicoctl http://www.projectcalico.org/latest/calicoctl
+      ExecStart=/usr/bin/chmod +x /opt/bin/calicoctl
+  - name: docker.service
+    command: restart
+    content: |-
+      [Unit]
+      Description=Docker Application Container Engine
+      After=docker.socket early-docker.target network.target download-reqs.service etcd2.service
+      Requires=docker.socket early-docker.target download-reqs.service
+
+      [Service]
+      Environment=TMPDIR=/var/tmp
+      MountFlags=slave
+      LimitNOFILE=1048576
+      LimitNPROC=1048576
+      ExecStart=/usr/bin/docker --cluster-store=etcd://$private_ipv4:2379 --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+      RestartSec=10
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: caliconode.service
+    command: start
+    content: |-
+      [Unit]
+      Description=Calico node service
+      Wants=network-online.target
+      After=network-online.target docker.service
+      Before=zookeeper.service
+
+      [Service]
+      RemainAfterExit=yes
+      Type=oneshot
+      ExecStart=/opt/bin/calicoctl node --libnetwork
   - name: zookeeper.service
     command: start
     content: |
@@ -67,35 +113,7 @@ coreos:
       RestartSec=5s
       TimeoutSec=22min
       ExecStartPre=-/usr/bin/docker rm mesos-slave
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.8.3
-  - name: consul-server.service
-    command: start
-    content: |
-      [Unit]
-      Description=Consul server service
-      Author=Oleksii Dzhulai
-      After=zookeeper.service mesos-master.service
-
-      [Service]
-      Restart=always
-      RestartSec=5s
-      TimeoutSec=20min
-      ExecStartPre=-/usr/bin/docker rm consul-master
-      ExecStart=/usr/bin/docker run --rm=true -p 8400:8400 -p 8500:8500 -p 53:53/udp -h $private_ipv4 --name consul-master progrium/consul -server -bootstrap
-  - name: mesos-consul.service
-    command: start
-    content: |
-      [Unit]
-      Description=Mesos-consul service
-      Author=Oleksii Dzhulai
-      After=zookeeper.service mesos-master.service
-
-      [Service]
-      Restart=always
-      RestartSec=5s
-      TimeoutSec=20min
-      ExecStartPre=-/usr/bin/docker rm mesos-consul
-      ExecStart=/usr/bin/docker run --rm=true --net=host --name mesos-consul ciscocloud/mesos-consul:latest --zk=zk://$private_ipv4:2181/mesos
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.9.1
 write_files:
 - path: /etc/systemd/coredump.conf
   permissions: '0644'
@@ -103,4 +121,16 @@ write_files:
   content: |
     [Coredump]
     Storage=none
+- path: /etc/profile.d/01.calico.sh
+  permissions: '0644'
+  owner: root
+  content: |
+    #!/usr/bin/bash
+    export PATH=/opt/bin:$PATH
+    export ETCD_AUTHORITY="$private_ipv4:2379"
+- path: /etc/sudoers.d/etcd
+  permissions: '0644'
+  owner: root
+  content: |
+    Defaults env_keep +="ETCD_AUTHORITY"
 manage_etc_hosts: localhost
