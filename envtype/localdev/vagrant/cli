@@ -3,7 +3,7 @@
 if [ -t 0 ] 
  then
 
-  TARGET=$(vagrant ssh -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}')
+  TARGET=$(vagrant ssh core-01 -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}')
   CONFIG=/tmp/vagrantmesos.toml
 
   cat << EOF >$CONFIG

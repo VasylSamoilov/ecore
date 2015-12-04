@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/df844d6b9a5d4474ed6746a273b51e27
+    discovery: https://discovery.etcd.io/53aa61049147b48a3c0414c5cab4e939
   units:
   - name: etcd2.service
     command: start
@@ -70,9 +70,10 @@ coreos:
       Restart=always
       RestartSec=5s
       TimeoutSec=20min
-      ExecStartPre=-/usr/bin/docker rm exhibitor
+      ExecStartPre=-/usr/bin/mkdir -p /tmp/opt/zookeeper/snapshots/
+      ExecStartPre=-/usr/bin/mkdir -p /tmp/opt/zookeeper/transactions/
       ExecStartPre=-/usr/bin/docker network create -d calico --subnet=192.168.100.0/24 admin
-      ExecStart=/usr/bin/docker run --net=admin --name exhibitor -v /opt/zookeeper/local_configs:/opt/zookeeper/local_configs nixlike/docker-zk-exhibitor
+      ExecStart=/usr/bin/docker run --net=host --rm=true -e HOSTNAME=$private_ipv4 -v /tmp/opt/zookeeper/snapshots:/opt/zookeeper/snapshots -v /tmp/opt/zookeeper/transactions:/opt/zookeeper/transactions -v /opt/zookeeper/local_configs:/opt/zookeeper/local_configs nixlike/docker-zk-exhibitor
   - name: mesos-master.service
     command: start
     content: |
@@ -86,7 +87,8 @@ coreos:
       RestartSec=5s
       TimeoutSec=20min
       ExecStartPre=-/usr/bin/docker rm mesos-master
-      ExecStart=/usr/bin/docker run --net=host -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=1 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
+      ExecStartPre=-/usr/bin/mkdir /tmp/mesos
+      ExecStart=/usr/bin/docker run --net=host -v /tmp/mesos/:/tmp/mesos/ -e "MESOS_REGISTRY=in_memory" -e "MESOS_LOG_DIR=/tmp/mesos" -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=2 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
   - name: marathon.service
     command: start
     content: |
