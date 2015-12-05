@@ -1,6 +1,3 @@
 [submodule "dependencies/coreos-vagrant"]
 	path = dependencies/coreos-vagrant
 	url = https://github.com/nixlike/coreos-vagrant.git
-[submodule "build/docker-zk-exhibitor"]
-	path = build/docker-zk-exhibitor
-	url = https://github.com/nixlike/docker-zk-exhibitor.git
