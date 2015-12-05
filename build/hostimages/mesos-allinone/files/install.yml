@@ -1,0 +1,5 @@
+#cloud-config
+
+users:
+  - name: "core"
+    passwd: "$6$aM4cTYzXsb$ps59q6cCkI5fjRbJhFDFwjozkTLTghEDJ8nT8RAq5dybfhTLQQovQG/hmcAWHJARvYZJ.1mrv0uukXK/NUQnA/"

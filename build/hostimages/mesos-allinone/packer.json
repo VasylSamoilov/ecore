@@ -1,0 +1,34 @@
+{
+  "builders": [
+    {
+	  "type": "virtualbox-iso",
+	  "iso_url": "http://alpha.release.core-os.net/amd64-usr/884.0.0/coreos_production_iso_image.iso",
+	  "iso_checksum": "b973ea2e7cebe70336f15a74ace6642d796490f9",
+	  "iso_checksum_type": "sha1",
+	  "ssh_username": "core",
+	  "ssh_password": "core",
+	  "ssh_wait_timeout": "10m",
+	  "http_directory": "files",
+	  "guest_os_type": "Linux26_64",
+	  "hard_drive_interface": "ide",
+          "vboxmanage": [
+             [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
+             [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
+          ],
+          "boot_wait": "10s",
+          "boot_command": [
+          "sudo -i<enter>",
+          "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/install.yml<enter>",
+          "coreos-install -d /dev/sda -C alpha -V 884.0.0 -c install.yml<enter><wait600>"
+          ],
+	  "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
+    },
+  {
+  	"type": "virtualbox-ovf",
+ 	"source_path": "packer_cache/coreos_production_virtualbox.ovf",
+  	"ssh_username": "core",
+  	"ssh_password": "",
+  	"shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
+  }
+ ]
+}
