@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/bin/echo "core:core"|/sbin/chpasswd
