@@ -1,13 +1,13 @@
 {
     "builders": [
         {
+            "headless": "true",
             "http_directory": "files",
+            "output_directory": "files/output",
             "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
             "source_path": "packer_cache/coreos_production_virtualbox.ovf",
-	    "output_directory": "files/output",
-            "ssh_username": "core",
             "ssh_password": "core",
-	    "headless": "true",
+            "ssh_username": "core",
             "type": "virtualbox-ovf",
             "vboxmanage": [
                 [
@@ -37,6 +37,13 @@
                     "1"
                 ]
             ]
+        }
+    ],
+    "post-processors": [
+        {
+            "output": "./files/coreos.box",
+            "type": "vagrant",
+            "vagrantfile_template": "../../../envtype/localdev/vagrant/Vagrantfile"
         }
     ]
 }
