@@ -9,6 +9,7 @@ download:
 	[ ! packer_cache/$(VBOX_NAME)_image.vmdk -ot packer_cache/$(VBOX_NAME)_image.vmdk.bz2 ] || [ ! -e packer_cache/$(VBOX_NAME)_image.vmdk ] && bzip2 -f -k -d packer_cache/$(VBOX_NAME)_image.vmdk.bz2
 
 configdrive:
+	[ -f files/configdrive.iso ] && rm files/configdrive.iso
 	hdiutil makehybrid -iso -joliet -default-volume-name config-2 -o ./files/configdrive.iso ./configdrive
 
 build:
