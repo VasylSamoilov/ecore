@@ -43,7 +43,8 @@
         {
             "output": "./files/coreos.box",
             "type": "vagrant",
-            "vagrantfile_template": "../../../envtype/localdev/vagrant/Vagrantfile"
+	    "include": ["./files/vagrant/base_mac.rb", "./files/vagrant/change_host_name.rb","./files/vagrant/configure_networks.rb"],
+            "vagrantfile_template": "./files/vagrant/Vagrantfile"
         }
     ]
 }

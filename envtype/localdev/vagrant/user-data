@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/b6ee9773b603d603b0057dc774a56502
+    discovery: https://discovery.etcd.io/a7e35f7dd5d8a80e21b6a73eb836217f
   units:
   - name: etcd2.service
     command: start

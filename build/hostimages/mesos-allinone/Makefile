@@ -12,7 +12,7 @@ configdrive:
 	hdiutil makehybrid -iso -joliet -default-volume-name config-2 -o ./files/configdrive.iso ./configdrive
 
 build:
-	packer build --force packer.json 
+	packer build --force packer.json && vagrant box add --name coreos_packer --force files/coreos.box
 
 clean:
 	rm -rf packer_cache/*
