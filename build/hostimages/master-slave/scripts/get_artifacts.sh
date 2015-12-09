@@ -31,6 +31,3 @@ wait $pid4
 wait $pid5
 wait $pid6
 
-#Create folder for vagrant usedata
-sudo mkdir -p /var/lib/coreos-vagrant
-
