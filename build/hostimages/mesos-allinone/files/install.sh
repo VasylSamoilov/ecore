@@ -2,9 +2,9 @@
 
 #This script is doing all the long running artifacts download during backing phase.
 
-/usr/bin/mkdir -p /opt/bin
-/usr/bin/wget -O /opt/bin/calicoctl http://www.projectcalico.org/latest/calicoctl
-/usr/bin/chmod +x /opt/bin/calicoctl
+sudo /usr/bin/mkdir -p /opt/bin
+sudo /usr/bin/wget -O /opt/bin/calicoctl http://www.projectcalico.org/latest/calicoctl
+sudo /usr/bin/chmod +x /opt/bin/calicoctl
 
 docker pull nixlike/docker-zk-exhibitor &
 pid1=$!
@@ -30,3 +30,7 @@ wait $pid3
 wait $pid4
 wait $pid5
 wait $pid6
+
+#Create folder for vagrant usedata
+sudo mkdir -p /var/lib/coreos-vagrant
+

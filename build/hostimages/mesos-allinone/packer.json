@@ -36,15 +36,41 @@
                     "--cpus",
                     "1"
                 ]
+            ],
+            "vboxmanage_post": [
+                [
+                    "storageattach",
+                    "{{.Name}}",
+                    "--storagectl",
+                    "IDE Controller",
+                    "--port",
+                    "1",
+                    "--device",
+                    "0",
+                    "--type",
+                    "dvddrive",
+                    "--medium",
+                    "none"
+                ]
             ]
         }
     ],
     "post-processors": [
         {
+            "include": [
+                "./files/vagrant/base_mac.rb",
+                "./files/vagrant/change_host_name.rb",
+                "./files/vagrant/configure_networks.rb"
+            ],
             "output": "./files/coreos.box",
             "type": "vagrant",
-	    "include": ["./files/vagrant/base_mac.rb", "./files/vagrant/change_host_name.rb","./files/vagrant/configure_networks.rb"],
             "vagrantfile_template": "./files/vagrant/Vagrantfile"
+        }
+    ],
+    "provisioners": [
+        {
+            "script": "./files/install.sh",
+            "type": "shell"
         }
     ]
 }
