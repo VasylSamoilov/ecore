@@ -2,8 +2,8 @@
 $num_instances=3
 
 # Used to fetch a new discovery token for a cluster of size $num_instances
-$new_discovery_url="https://discovery.etcd.io/new?size=1"
-#$new_discovery_url="https://discovery.etcd.io/new?size=#{$num_instances}"
+#$new_discovery_url="https://discovery.etcd.io/new?size=1"
+$new_discovery_url="https://discovery.etcd.io/new?size=#{$num_instances}"
 
 # To automatically replace the discovery token on 'vagrant up', uncomment
 # the lines below :
@@ -78,7 +78,7 @@ $update_channel='alpha'
 
 # Customize VMs
 #$vm_gui = false
-$vm_memory = 2024
+#$vm_memory = 2024
 #$vm_cpus = 1
 
 # Share additional folders to the CoreOS VMs

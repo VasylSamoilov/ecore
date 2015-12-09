@@ -7,9 +7,14 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/40f327fc0ad01e296880e09122994c47
+    discovery: https://discovery.etcd.io/0978c575f034ac682e2770b9452b4a07
   units:
   - name: etcd2.service
+    drop-ins:
+    - name: 50-timeout.conf
+      content: |
+        [Service]
+        TimeoutSec=5min
     command: start
   - name: docker.service
     command: restart
@@ -54,8 +59,8 @@ coreos:
 
       [Service]
       Restart=always
-      RestartSec=5s
-      TimeoutSec=20min
+      RestartSec=1s
+      TimeoutSec=30s
       ExecStartPre=-/usr/bin/mkdir -p /tmp/opt/zookeeper/snapshots/
       ExecStartPre=-/usr/bin/mkdir -p /tmp/opt/zookeeper/transactions/
       ExecStartPre=-/usr/bin/docker network create -d calico --subnet=192.168.100.0/24 admin
@@ -70,8 +75,8 @@ coreos:
 
       [Service]
       Restart=always
-      RestartSec=5s
-      TimeoutSec=20min
+      RestartSec=1s
+      TimeoutSec=30s
       ExecStartPre=-/usr/bin/docker rm mesos-master
       ExecStartPre=-/usr/bin/mkdir /tmp/mesos
       ExecStart=/usr/bin/docker run --net=host -v /tmp/mesos/:/tmp/mesos/ -e "MESOS_REGISTRY=in_memory" -e "MESOS_LOG_DIR=/tmp/mesos" -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_QUORUM=2 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
