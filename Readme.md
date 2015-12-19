@@ -6,7 +6,7 @@ Not because of the hype, but because I love it!
 * The easiest way to rollout local mesos platform
 * Cloud Agnostic
 * Resource capacity is the only difference between environments
-* No static particioning 
+* No static partitioning
 * Security applied starting from DEV
 * Scallability and HA out of the box
 
