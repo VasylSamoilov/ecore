@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/24763d669355ad112333eb0172feb0ed
+    discovery: https://discovery.etcd.io/498d2ff259f9c4fb67414e8306d59d70
   units:
   - name: etcd2.service
     drop-ins:
@@ -35,6 +35,19 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+  - name: registrator.service
+    command: start
+    content: |
+      [Unit]
+      Description=Registrator service http://gliderlabs.com/registrator
+      After=docker.service
+      Before=exhibitor.service
+
+      [Service]
+      Restart=always
+      TimeoutStartSec=30s
+      TimeoutStopSec=3s
+      ExecStart=/usr/bin/docker run --rm=true --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator:latest -tags master -ip $public_ipv4 etcd://localhost:2379
   - name: caliconode.service
     command: start
     content: |-
@@ -108,20 +121,20 @@ coreos:
       ExecStartPre=-/usr/bin/docker rm mesos-slave
       ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$public_ipv4 -e MESOS_HOSTNAME=$public_ipv4 -e MESOS_IP=$public_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.9.1
 write_files:
-- path: /etc/systemd/coredump.conf
+- path: "/etc/systemd/coredump.conf"
   permissions: '0644'
   owner: root
   content: |
     [Coredump]
     Storage=none
-- path: /etc/profile.d/01.calico.sh
+- path: "/etc/profile.d/01.calico.sh"
   permissions: '0644'
   owner: root
   content: |
     #!/usr/bin/bash
     export PATH=/opt/bin:$PATH
     export ETCD_AUTHORITY="$private_ipv4:2379"
-- path: /etc/sudoers.d/etcd
+- path: "/etc/sudoers.d/etcd"
   permissions: '0644'
   owner: root
   content: |
