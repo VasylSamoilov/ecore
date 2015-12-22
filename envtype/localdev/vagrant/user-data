@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/498d2ff259f9c4fb67414e8306d59d70
+    discovery: https://discovery.etcd.io/9f58bf26516c3136188ef880cf6b6aff
   units:
   - name: etcd2.service
     drop-ins:
@@ -61,6 +61,21 @@ coreos:
       RemainAfterExit=yes
       Type=oneshot
       ExecStart=/opt/bin/calicoctl node --libnetwork
+  - name: mesos-dns.service
+    command: start
+    content: |-
+      [Unit]
+      Description=Mesos-dns service
+      Wants=network-online.target
+      After=network-online.target docker.service mesos-master.service
+
+      [Service]
+      Restart=always
+      TimeoutStartSec=30s
+      TimeoutStopSec=3s
+      ExecStartPre=-/usr/bin/wget -O /opt/bin/mesos-dns https://github.com/mesosphere/mesos-dns/releases/download/v0.5.1/mesos-dns-v0.5.1-linux-amd64
+      ExecStartPre=-/usr/bin/chmod +x /opt/bin/mesos-dns
+      ExecStart=/opt/bin/mesos-dns -config=/opt/etc/mesos-dns.json
   - name: exhibitor.service
     command: start
     content: |
@@ -139,4 +154,30 @@ write_files:
   owner: root
   content: |
     Defaults env_keep +="ETCD_AUTHORITY"
+- path: "/opt/etc/mesos-dns.json"
+  permissions: '0644'
+  owner: root
+  content: |
+    {
+     "zk": "zk://127.0.0.1:2181/mesos",
+     "masters": ["127.0.0.1:5050"],
+     "refreshSeconds": 60,
+     "ttl": 60,
+     "domain": "mesos",
+     "port": 53,
+     "resolvers": ["8.8.8.8"],
+     "timeout": 5,
+     "httpon": true,
+     "dnson": true,
+     "httpport": 8123,
+     "externalon": true,
+     "listener": "0.0.0.0",
+     "SOAMname": "ns1.mesos",
+     "SOARname": "root.ns1.mesos",
+     "SOARefresh": 60,
+     "SOARetry":   600,
+     "SOAExpire":  86400,
+     "SOAMinttl": 60,
+     "IPSources": ["netinfo", "mesos", "host"]
+    }
 manage_etc_hosts: localhost
