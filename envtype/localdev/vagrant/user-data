@@ -7,8 +7,10 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/9f58bf26516c3136188ef880cf6b6aff
+    discovery: https://discovery.etcd.io/bf64c193cb29fb88c2b612f5f8b31102
   units:
+  - name: update-engine.service
+    command: stop
   - name: etcd2.service
     drop-ins:
     - name: 50-timeout.conf
@@ -47,7 +49,7 @@ coreos:
       Restart=always
       TimeoutStartSec=30s
       TimeoutStopSec=3s
-      ExecStart=/usr/bin/docker run --rm=true --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator:latest -tags master -ip $public_ipv4 etcd://localhost:2379
+      ExecStart=/usr/bin/docker run --rm=true --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator:latest -tags master -ip $public_ipv4 etcd://127.0.0.1:2379
   - name: caliconode.service
     command: start
     content: |-
@@ -71,11 +73,28 @@ coreos:
 
       [Service]
       Restart=always
-      TimeoutStartSec=30s
+      TimeoutStartSec=3m
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/wget -O /opt/bin/mesos-dns https://github.com/mesosphere/mesos-dns/releases/download/v0.5.1/mesos-dns-v0.5.1-linux-amd64
       ExecStartPre=-/usr/bin/chmod +x /opt/bin/mesos-dns
       ExecStart=/opt/bin/mesos-dns -config=/opt/etc/mesos-dns.json
+  - name: confd.service
+    command: start
+    content: |-
+      [Unit]
+      Description=Confd service
+      Wants=network-online.target
+      After=network-online.target docker.service mesos-master.service mesos-dns.service registrator.service
+
+      [Service]
+      Restart=always
+      TimeoutStartSec=3m
+      TimeoutStopSec=3s
+      ExecStartPre=-/usr/bin/wget -O /opt/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64
+      ExecStartPre=-/usr/bin/chmod +x /opt/bin/confd
+      ExecStartPre=-/bin/sh -c '/usr/bin/grep nameserver /run/systemd/resolve/resolv.conf >>/opt/etc/confd/templates/resolv.conf.tmpl'
+      ExecStart=/opt/bin/confd -confdir=/opt/etc/confd -interval=2
+      ExecStopPost=-/bin/sh -c '/usr/bin/grep nameserver /run/systemd/resolve/resolv.conf >/etc/resolv.conf'
   - name: exhibitor.service
     command: start
     content: |
@@ -180,4 +199,23 @@ write_files:
      "SOAMinttl": 60,
      "IPSources": ["netinfo", "mesos", "host"]
     }
+- path: "/opt/etc/confd/conf.d/resolv.toml"
+  permissions: '0644'
+  owner: root
+  content: |
+    [template]
+    src = "resolv.conf.tmpl"
+    dest = "/etc/resolv.conf"
+    uid = 0
+    gid = 0
+    mode = "0644"
+    keys = [
+     "/mesos-master"
+    ]
+- path: "/opt/etc/confd/templates/resolv.conf.tmpl"
+  permissions: '0644'
+  owner: root
+  content: |
+    {{range getvs "/mesos-master/*"}}{{ $ip := split (.) ":" }}nameserver {{index $ip 0}}
+    {{end}}
 manage_etc_hosts: localhost
