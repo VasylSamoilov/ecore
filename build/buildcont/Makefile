@@ -1,5 +1,5 @@
 build:
-	docker build -t nixlike/buildcont:ubuntu-14.04 .
+	docker build -t nixlike/buildcont:ubuntu-15.10 .
 push:
-	docker push nixlike/buildcont:ubuntu-14.04
+	docker push nixlike/buildcont:ubuntu-15.10
 

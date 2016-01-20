@@ -1,4 +1,12 @@
-FROM ubuntu:14.04
+FROM ubuntu:15.10
 
-RUN apt-get update && \
-apt-get install -y python-demjson
+WORKDIR /tmp
+
+RUN sed -i 's/http:\/\/archive.ubuntu.com\/ubuntu\//mirror:\/\/mirrors.ubuntu.com\/mirrors.txt/' /etc/apt/sources.list
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y python-demjson wget git ruby
+
+#RUN wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb \
+#	&& dpkg -i vagrant_1.8.1_x86_64.deb
+
+RUN gem install ruby-lint
