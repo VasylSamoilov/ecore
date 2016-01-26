@@ -21,8 +21,11 @@ pid4=$!
 docker pull calico/node:latest &
 pid5=$!
 
-docker pull calico/node-libnetwork:latest &
+docker pull calico/node-libnetwork:v0.7.0 &
 pid6=$!
+
+docker pull gliderlabs/registrator:v6 &
+pid7=$!
 
 wait $pid1
 wait $pid2
@@ -30,4 +33,5 @@ wait $pid3
 wait $pid4
 wait $pid5
 wait $pid6
+wait $pid7
 

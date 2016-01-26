@@ -22,10 +22,11 @@ sources = [ "https://github.com/mesosphere/universe/archive/version-1.x.zip",]
 cache = "/tmp/.dcos/cache"
 EOF
 
-  DCOS_CONFIG=$CONFIG dcos $@
+  DCOS_CONFIG=$CONFIG dcos "$@"
 
  else
   input="-"
-  export json=$(cat $input)
-  DCOS_CONFIG=$CONFIG echo $json | dcos $@
+  json=$(cat $input)
+  export json
+  DCOS_CONFIG=$CONFIG echo "$json" | dcos "$@"
 fi  

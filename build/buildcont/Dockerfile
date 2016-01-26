@@ -9,6 +9,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --no-instal
 	wget=1.16.1* \
 	git=1:2.5.0* \
 	ruby=1:2.1.* \
+	shellcheck=0.3.7-1 \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 RUN gem install ruby-lint
