@@ -1,19 +1,19 @@
 require 'rake'
 require 'rspec/core/rake_task'
 
-task :spec    => 'spec:all'
+task :spec    => 'spec:lint'
 task :default => :spec
 
 namespace :spec do
   targets = []
-  Dir.glob('./spec/*').each do |dir|
+  Dir.glob('./spec/lint/*').each do |dir|
     next unless File.directory?(dir)
     target = File.basename(dir)
     target = "_#{target}" if target == "default"
     targets << target
   end
 
-  task :all     => targets
+  task :lint     => targets
   task :default => :all
 
   targets.each do |target|
@@ -21,7 +21,7 @@ namespace :spec do
     desc "Run serverspec tests to #{original_target}"
     RSpec::Core::RakeTask.new(target.to_sym) do |t|
       ENV['TARGET_HOST'] = original_target
-      t.pattern = "spec/#{original_target}/*_spec.rb"
+      t.pattern = "spec/lint/#{original_target}/*_spec.rb"
     end
   end
 end
