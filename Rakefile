@@ -1,10 +1,11 @@
 require 'rake'
 require 'rspec/core/rake_task'
 
-task :spec    => 'spec:lint'
-task :default => :spec
+task :glob    => 'glob:lint'
+task :default => :glob
+task :vagrant => 'vagrant:all'
 
-namespace :spec do
+namespace :glob do
   targets = []
   Dir.glob('./spec/lint/*').each do |dir|
     next unless File.directory?(dir)
@@ -23,5 +24,11 @@ namespace :spec do
       ENV['TARGET_HOST'] = original_target
       t.pattern = "spec/lint/#{original_target}/*_spec.rb"
     end
+  end
+end
+
+namespace :vagrant do
+  task :all do
+	  sh "cd envtype/localdev/vagrant&&rake"
   end
 end

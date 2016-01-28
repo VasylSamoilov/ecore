@@ -1,9 +1,4 @@
-#Short term priorities 
+# How to run tests during development
 
-- Single node vagrant environment with core services and maintenance tools.
-	1. Zookeeper
-	2. Mesos master
-	3. Marathon 
-	4. Mesos slave
-	5. Cadvisor
-	6. Management console / CLI
+$rake glob vagrant
+
