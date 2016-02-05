@@ -1,79 +1,112 @@
 {
-  "builders": [
-    {
-      "type": "virtualbox-iso",
-      "vm_name": "coreos-{{user `channel`}}",
-
-      "iso_checksum": "{{user `checksum`}}",
-      "iso_checksum_type": "{{user `checksum_type`}}",
-      "iso_url": "http://{{user `channel`}}.release.core-os.net/amd64-usr/{{user `version`}}/coreos_production_iso_image.iso",
-
-      "http_directory": "files",
-
-      "ssh_port": 22,
-      "ssh_username": "core",
-      "ssh_key_path": "files/vagrant",
-      "ssh_wait_timeout": "10m",
-
-      "guest_os_type": "Linux26_64",
-      "hard_drive_interface": "sata",
-      "disk_size": 40960,
-      "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
-      ],
-      "guest_additions_mode": "disable",
-
-      "boot_command": [
-        "sudo -i<enter>",
-        "systemctl stop sshd.socket<enter>",
-        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/install.yml<enter>",
-        "coreos-install -d /dev/sda -C {{user `channel`}} -c install.yml<enter>",
-        "reboot<enter>"
-      ],
-      "boot_wait": "30s",
-      "shutdown_command": "sudo -S shutdown -P now",
-
-      "output_directory": "builds/packer-coreos-{{user `channel`}}-{{user `version`}}-virtualbox",
-      "virtualbox_version_file": ".virtualbox_version"
+    "builders": [
+        {
+            "boot_command": [
+                "sudo -i<enter>",
+                "systemctl stop sshd.socket<enter>",
+                "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/install.yml<enter>",
+                "coreos-install -d /dev/sda -C {{user `channel`}} -c install.yml<enter>",
+                "reboot<enter>"
+            ],
+            "boot_wait": "30s",
+            "disk_size": 40960,
+            "guest_additions_mode": "disable",
+            "guest_os_type": "Linux26_64",
+            "hard_drive_interface": "sata",
+            "http_directory": "files",
+            "iso_checksum": "{{user `checksum`}}",
+            "iso_checksum_type": "{{user `checksum_type`}}",
+            "iso_url": "http://{{user `channel`}}.release.core-os.net/amd64-usr/{{user `version`}}/coreos_production_iso_image.iso",
+            "output_directory": "builds/packer-coreos-{{user `channel`}}-{{user `version`}}-virtualbox",
+            "shutdown_command": "sudo -S shutdown -P now",
+            "ssh_key_path": "files/vagrant",
+            "ssh_port": 22,
+            "ssh_username": "core",
+            "ssh_wait_timeout": "10m",
+            "type": "virtualbox-iso",
+            "vboxmanage": [
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--memory",
+                    "1024"
+                ],
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--cpus",
+                    "1"
+                ]
+            ],
+            "virtualbox_version_file": ".virtualbox_version",
+            "vm_name": "coreos-{{user `channel`}}"
+        },
+        {
+            "ami_name": "coreos_mesos_master_slave {{isotime | clean_ami_name}}",
+            "instance_type": "{{user `instance_type`}}",
+            "region": "{{user `aws_region`}}",
+            "source_ami": "{{user `source_ami`}}",
+            "ssh_username": "core",
+            "type": "amazon-ebs"
+        }
+    ],
+    "post-processors": [
+        {
+            "include": [
+                "files/to_image/box/base_mac.rb",
+                "files/to_image/box/change_host_name.rb",
+                "files/to_image/box/configure_networks.rb"
+            ],
+            "output": "./builds/{{.Provider}}/coreos-{{user `channel`}}.box",
+            "type": "vagrant",
+            "vagrantfile_template": "files/to_image/box/Vagrantfile"
+        }
+    ],
+    "provisioners": [
+        {
+            "inline": [
+                "mkdir oem"
+            ],
+            "only": [
+                "virtualbox-iso"
+            ],
+            "type": "shell"
+        },
+        {
+            "destination": "oem/",
+            "only": [
+                "virtualbox-iso"
+            ],
+            "source": "files/to_image/",
+            "type": "file"
+        },
+        {
+            "environment_vars": [],
+            "only": [
+                "virtualbox-iso"
+            ],
+            "scripts": [
+                "scripts/oem.sh",
+                "scripts/cleanup.sh",
+                "scripts/get_artifacts.sh"
+            ],
+            "type": "shell"
+        },
+        {
+            "environment_vars": [],
+            "only": [
+                "amazon-ebs"
+            ],
+            "scripts": [
+                "scripts/get_artifacts.sh"
+            ],
+            "type": "shell"
+        }
+    ],
+    "variables": {
+        "channel": "alpha",
+        "checksum": "e8fa0af4ae37ec3391b5a828dbfcda5c",
+        "checksum_type": "md5",
+        "version": "884.0.0"
     }
-  ],
-  "provisioners": [
-    {
-      "type": "shell",
-      "inline": ["mkdir oem"]
-    },
-    {
-      "type": "file",
-      "source": "files/to_image/",
-      "destination": "oem/" 
-    },
-    {
-      "type": "shell",
-      "environment_vars" : [],
-      "scripts": [
-        "scripts/oem.sh",
-        "scripts/cleanup.sh",
-        "scripts/get_artifacts.sh"
-      ]
-    }
-  ],
-  "post-processors": [
-    {
-      "type": "vagrant",
-      "output": "./builds/{{.Provider}}/coreos-{{user `channel`}}.box",
-      "vagrantfile_template": "files/to_image/box/Vagrantfile",
-      "include": [
-        "files/to_image/box/base_mac.rb",
-        "files/to_image/box/change_host_name.rb",
-        "files/to_image/box/configure_networks.rb"
-      ]
-    }
-  ],
-  "variables": {
-    "channel": "alpha",
-    "version": "884.0.0",
-    "checksum_type": "md5",
-    "checksum": "e8fa0af4ae37ec3391b5a828dbfcda5c"
-  }
 }

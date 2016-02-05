@@ -14,6 +14,9 @@ box: coreos.json builds/virtualbox/coreos-$(CHANNEL).box $(FILES)
 
 build: builds/virtualbox/coreos-$(CHANNEL).box
 
+ami: 
+	packer build -only=amazon-ebs -var-file=vars/ami.json -var "source_ami=`curl http://beta.release.core-os.net/amd64-usr/899.6.0/coreos_production_ami_hvm_eu-west-1.txt`" coreos.json
+
 builds/virtualbox/coreos-$(CHANNEL).box:
 	packer build -only=virtualbox-iso coreos.json
 

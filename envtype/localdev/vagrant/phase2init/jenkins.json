@@ -1,0 +1,20 @@
+{
+  "id": "jenkins",
+  "cpus": 0.5,
+  "mem": 400,
+  "instances": 1,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "jenkins",
+      "network": "HOST",
+      "parameters": [
+                { "key": "net", "value": "admin" },
+                { "key": "publish", "value": "18080:8080" }
+     ]
+    }
+  },
+  "upgradeStrategy": {
+      "minimumHealthCapacity": 0
+  }
+}
