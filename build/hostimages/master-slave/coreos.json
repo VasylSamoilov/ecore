@@ -42,7 +42,7 @@
             "vm_name": "coreos-{{user `channel`}}"
         },
         {
-            "ami_name": "coreos_mesos_master_slave {{isotime | clean_ami_name}}",
+            "ami_name": "coreos_mesos_master_slave_{{user `channel`}}_{{user `version`}}_{{isotime | clean_ami_name}}",
             "instance_type": "{{user `instance_type`}}",
             "region": "{{user `aws_region`}}",
             "source_ami": "{{user `source_ami`}}",
