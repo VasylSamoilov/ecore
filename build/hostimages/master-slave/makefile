@@ -1,5 +1,8 @@
-VERSION_ID := 1.0.0
+VERSION_ID := 884.0.0
 CHANNEL    := alpha
+CHECKSUM_TYPE   := md5
+CHECKSUM   := e8fa0af4ae37ec3391b5a828dbfcda5c
+AWS_REGION  := eu-west-1
 
 FILES = \
 	files/box/change_host_name.rb \
@@ -12,13 +15,13 @@ FILES = \
 
 box: coreos.json builds/virtualbox/coreos-$(CHANNEL).box $(FILES)
 
-build: builds/virtualbox/coreos-$(CHANNEL).box
+build: builds/virtualbox/coreos-$(CHANNEL).box ami
 
 ami: 
-	packer build -only=amazon-ebs -var-file=vars/ami.json -var "source_ami=`curl http://beta.release.core-os.net/amd64-usr/899.6.0/coreos_production_ami_hvm_eu-west-1.txt`" coreos.json
+	packer build -only=amazon-ebs -var-file=vars/vars.json -var "source_ami=`curl http://$(CHANNEL).release.core-os.net/amd64-usr/$(VERSION_ID)/coreos_production_ami_hvm_$(AWS_REGION).txt`" -var "aws_region=$(AWS_REGION)" -var "channel=$(CHANNEL)" -var "checksum=$(CHECKSUM)" -var "checksum_type=$(CHECKSUM_TYPE)" -var "version=$(VERSION_ID)" coreos.json
 
 builds/virtualbox/coreos-$(CHANNEL).box:
-	packer build -only=virtualbox-iso coreos.json
+	packer build -only=virtualbox-iso -var-file=vars/vars.json -var "channel=$(CHANNEL)" -var "checksum=$(CHECKSUM)" -var "checksum_type=$(CHECKSUM_TYPE)" -var "version=$(VERSION_ID)" coreos.json
 
 install:
 	vagrant box add --force --provider=virtualbox --name ecore/coreos-$(CHANNEL) builds/virtualbox/coreos-$(CHANNEL).box
@@ -27,4 +30,4 @@ clean:
 	rm -fr builds
 	rm -fr packer_cache
 
-.PHONY: box clean build builds/virtualbox/coreos-$(CHANNEL).box
+.PHONY: box ami clean build builds/virtualbox/coreos-$(CHANNEL).box

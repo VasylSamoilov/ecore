@@ -59,6 +59,7 @@
             ],
             "output": "./builds/{{.Provider}}/coreos-{{user `channel`}}.box",
             "type": "vagrant",
+	    "only": ["virtualbox-iso"],
             "vagrantfile_template": "files/to_image/box/Vagrantfile"
         }
     ],
@@ -102,11 +103,5 @@
             ],
             "type": "shell"
         }
-    ],
-    "variables": {
-        "channel": "alpha",
-        "checksum": "e8fa0af4ae37ec3391b5a828dbfcda5c",
-        "checksum_type": "md5",
-        "version": "884.0.0"
-    }
+    ]
 }
