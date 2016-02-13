@@ -20,7 +20,7 @@ variable "mesos_all_in_one_ami" {
 
 variable "mesos_all_in_one_nstance_type" {
     type = "string"
-    default = "t2.micro"
+    default = "t2.small"
 }
 
 variable "core_vpc_network" {
