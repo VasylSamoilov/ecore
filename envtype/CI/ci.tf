@@ -1,14 +1,32 @@
 provider "aws" {
-    region = "eu-west-1"
+    region = "${var.core_region}"
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name = "nixlike" 
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC12JbIiEYD/MB0tP+2iieiBbxU2GYrMJLHPwSEmB3FFBn2NruDM4Aghq0V7VCyEDkNeiaFqhYZy/XrCS9l6HUcpOmFTciRJ3g7kXMqxprCLLktfU1VL6IMtYHn0BSGTQMjtqLDkMnnjEWKneCQJu/YmUDyxnVo6+fcgbWA6iHmkJCwzHPYMtiVjfBubaDGR1HOPm/OlEjXEdLTQnCjHBuxEVWM9ZIrUoUZAzObKvmWdxcW2O9qSa9vrtTFql80a1aH39INBjh6icR2nDx18BXzlbuZiDuHI+LOKWEgEaVKkNmeIdLDBjUpjlOAWUaBTF9XikcTR+0bd5LH1xLWlBdH"
+  key_name = "${var.deployer_key_name}"
+  public_key = "${var.deployer_key_pub}"
+}
+
+resource "aws_vpc" "mesos" {
+    cidr_block = "${var.core_vpc_network}"
+
+    tags {
+        Name = "mesos"
+    }
+}
+
+resource "aws_subnet" "subnet_1" {
+    vpc_id = "${aws_vpc.mesos.id}"
+    cidr_block = "${var.core_vpc_subnet_1}"
+
+    tags {
+        Name = "Main"
+    }
 }
 
 resource "aws_instance" "mesos_all_in_one" {
-    ami = "ami-e0f34093"
-    instance_type = "t2.micro"
+    ami = "${var.mesos_all_in_one_ami}"
+    instance_type = "${var.mesos_all_in_one_nstance_type}"
     key_name = "${aws_key_pair.deployer.key_name}"
+    subnet_id= "${aws_subnet.subnet_1.id}"
 }
