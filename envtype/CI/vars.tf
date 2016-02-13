@@ -28,7 +28,14 @@ variable "core_vpc_network" {
     default = "10.100.0.0/16"
 }
 
-variable "core_vpc_subnet_1" {
+variable "core_vpc_sub_1" {
     type = "string"
     default = "10.100.1.0/24"
 }
+
+variable "admin_location" {
+    type = "string"
+    default = "0.0.0.0/0"
+}
+
+
