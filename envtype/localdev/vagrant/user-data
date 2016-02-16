@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/025c0152a452db3ef2e0db62b4d7b972
+    discovery: https://discovery.etcd.io/086647dfce00e6a6378af4d534fb5a9d
   units:
   - name: update-engine.service
     command: stop
@@ -150,6 +150,19 @@ coreos:
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-slave
       ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.9.1
+  - name: instance-test.service
+    command: start
+    content: |
+      [Unit]
+      Description=Health check during instance provision
+      After=mesos-master.service
+
+      [Service]
+      RemainAfterExit=yes
+      Type=oneshot
+      ExecStart=~/bin/docker pull nixlike/buildcont:ubuntu-15.10
+      ExecStart=/usr/bin/bash -c 'while [ ! "$(docker run --entrypoint bash nixlike/buildcont:ubuntu-15.10 -c "cd ecore/envtype/CI && rake")" ]; do sleep 2;done'
+      ExecStartPost=/usr/bin/touch /tmp/signal
 write_files:
 - path: "/etc/systemd/coredump.conf"
   permissions: '0644'

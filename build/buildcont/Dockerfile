@@ -15,4 +15,4 @@ RUN gem install ruby-lint:2.1.0 serverspec:2.29.2 rake:10.5.0
 
 RUN git clone https://github.com/nixlike/ecore && \
 	cd ecore &&\
-	git checkout c2398e1c833dc13afd8b7b69383f768cff54d7e4
+	git checkout 7ca4d1635bc19a8ead07ed7f4d6653b45e624404
