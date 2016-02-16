@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/4c267f2a101e956034d504907727283e
+    discovery: https://discovery.etcd.io/025c0152a452db3ef2e0db62b4d7b972
   units:
   - name: update-engine.service
     command: stop
@@ -75,8 +75,6 @@ coreos:
       Restart=always
       TimeoutStartSec=3m
       TimeoutStopSec=3s
-      ExecStartPre=-/usr/bin/wget -O /opt/bin/mesos-dns https://github.com/mesosphere/mesos-dns/releases/download/v0.5.1/mesos-dns-v0.5.1-linux-amd64
-      ExecStartPre=-/usr/bin/chmod +x /opt/bin/mesos-dns
       ExecStart=/opt/bin/mesos-dns -config=/opt/etc/mesos-dns.json
   - name: confd.service
     command: start
@@ -90,8 +88,6 @@ coreos:
       Restart=always
       TimeoutStartSec=3m
       TimeoutStopSec=3s
-      ExecStartPre=-/usr/bin/wget -O /opt/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64
-      ExecStartPre=-/usr/bin/chmod +x /opt/bin/confd
       ExecStartPre=-/bin/sh -c '/usr/bin/grep nameserver /run/systemd/resolve/resolv.conf >>/opt/etc/confd/templates/resolv.conf.tmpl'
       ExecStart=/opt/bin/confd -confdir=/opt/etc/confd -interval=2
       ExecStopPost=-/bin/sh -c '/usr/bin/grep nameserver /run/systemd/resolve/resolv.conf >/etc/resolv.conf'
