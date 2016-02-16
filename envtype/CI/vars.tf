@@ -38,4 +38,9 @@ variable "admin_location" {
     default = "0.0.0.0/0"
 }
 
+variable "ssh_priv_key" {
+    type = "string"
+    default = "/Users/nixlike/.ssh/id_rsa_ACM.pem"
+}
+
 
