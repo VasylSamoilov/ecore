@@ -97,3 +97,7 @@ resource "aws_instance" "mesos_all_in_one" {
         Name = "Mesos all in one instance"
     }
 }
+
+output "address" {
+    value = "${aws_instance.mesos_all_in_one.private_ip}"
+}
