@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/938cedad304dd51261ce7c7002feba45
+    discovery: https://discovery.etcd.io/324b8fc14e857e988bd3942d0a87e951
   units:
   - name: update-engine.service
     command: stop
@@ -149,7 +149,7 @@ coreos:
       TimeoutStartSec=15s
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-slave
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.9.1
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DOCKER_PULLER_TIMEOUT=1000secs -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
   - name: instance-test.service
     command: start
     content: |
