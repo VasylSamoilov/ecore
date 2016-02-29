@@ -12,7 +12,7 @@ pid2=$!
 docker pull mesoscloud/marathon:0.11.0-ubuntu-15.04 &
 pid3=$!
 
-docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.9.1 &
+docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0 &
 pid4=$!
 
 docker pull calico/node:latest &

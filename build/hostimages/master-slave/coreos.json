@@ -24,6 +24,7 @@
             "ssh_username": "core",
             "ssh_wait_timeout": "10m",
             "type": "virtualbox-iso",
+	    "headless":"true",
             "vboxmanage": [
                 [
                     "modifyvm",
