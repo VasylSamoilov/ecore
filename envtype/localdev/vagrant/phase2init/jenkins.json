@@ -8,6 +8,7 @@
     "docker": {
       "image": "jenkins",
       "network": "HOST",
+      "forcePullImage": true,
       "parameters": [
                 { "key": "net", "value": "admin" },
                 { "key": "publish", "value": "18080:8080" }

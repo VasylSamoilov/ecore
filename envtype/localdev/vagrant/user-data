@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/a6e62f3a255ef68f3ec6e0ed66290310
+    discovery: https://discovery.etcd.io/9e14024bdf8e84224c2f23a3de809861
   units:
   - name: update-engine.service
     command: stop
@@ -34,7 +34,6 @@ coreos:
       ExecStart=/usr/bin/docker daemon --cluster-store=etcd://$private_ipv4:2379 --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
       RestartSec=10
       Restart=always
-
       [Install]
       WantedBy=multi-user.target
   - name: registrator.service
@@ -135,7 +134,7 @@ coreos:
       Restart=always
       TimeoutSec=1min
       ExecStartPre=-/usr/bin/docker rm marathon
-      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$private_ipv4 -e MARATHON_HOSTNAME=$private_ipv4 -e MARATHON_HTTPS_ADDRESS=$private_ipv4 -e MARATHON_HTTP_ADDRESS=$private_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon --rm=true --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
+      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$private_ipv4 -e MARATHON_HOSTNAME=$private_ipv4 -e MARATHON_HTTPS_ADDRESS=$private_ipv4 -e MARATHON_HTTP_ADDRESS=$private_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon -e MARATHON_RECONCILIATION_INITIAL_DELAY=300000 -e MARATHON_SCALE_APPS_INITIAL_DELAY=300000 -e MARATHON_TASK_LAUNCH_TIMEOUT=300000 -e MARATHON_TASK_LAUNCH_CONFIRM_TIMEOUT=300000 --rm=true --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
   - name: mesos-slave.service
     command: start
     content: |
@@ -146,10 +145,11 @@ coreos:
 
       [Service]
       Restart=always
-      TimeoutStartSec=15s
+      TimeoutStartSec=20m
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-slave
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DOCKER_PULLER_TIMEOUT=1000secs -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
+      ExecStartPre=-/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
   - name: instance-test.service
     command: start
     content: |
@@ -160,7 +160,7 @@ coreos:
       [Service]
       RemainAfterExit=yes
       Type=oneshot
-      ExecStart=~/bin/docker pull nixlike/buildcont:ubuntu-15.10
+      ExecStart=-/bin/docker pull nixlike/buildcont:ubuntu-15.10
       ExecStart=/usr/bin/bash -c 'while [ ! "$(docker run --entrypoint bash nixlike/buildcont:ubuntu-15.10 -c "cd ecore/envtype/CI && rake")" ]; do sleep 2;done'
       ExecStartPost=/usr/bin/touch /tmp/signal
 write_files:

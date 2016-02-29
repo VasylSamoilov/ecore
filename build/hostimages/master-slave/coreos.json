@@ -22,15 +22,15 @@
             "ssh_key_path": "files/vagrant",
             "ssh_port": 22,
             "ssh_username": "core",
-            "ssh_wait_timeout": "10m",
+            "ssh_wait_timeout": "40m",
             "type": "virtualbox-iso",
-	    "headless":"true",
+	    "headless":"false",
             "vboxmanage": [
                 [
                     "modifyvm",
                     "{{.Name}}",
                     "--memory",
-                    "1024"
+                    "2024"
                 ],
                 [
                     "modifyvm",

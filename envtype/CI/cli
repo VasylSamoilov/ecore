@@ -1,22 +1,22 @@
-#!/bin/bash 
+#!/bin/bash
 
-if [ -t 0 ] 
+if [ -t 0 ]
  then
 
-  TARGET=$(vagrant ssh core-01 -c 'docker inspect mesos-master|egrep MESOS_IP|tr -d \"\,'|awk -F= '{print $2}')
-  CONFIG=/tmp/vagrantmesos.toml
+  TARGET=$(terraform output|grep "master_public_address"|awk '{print $3}')
+  CONFIG=/tmp/cimesos.toml
 
   cat << EOF >$CONFIG
 [core]
-dcos_url = "http://${TARGET%?}"
+dcos_url = "http://${TARGET}"
 reporting = false
 token = "b12eca6fc0b7d82eedf58e832e941416376ca7e24db3cf8f03e9efe8e0903b7c"
-mesos_master_url = "http://${TARGET%?}:5050"
+mesos_master_url = "http://${TARGET}:5050"
 timeout = 5
 ssl_verify = "false"
 email = "youremail@dot.com"
 [marathon]
-url = "http://${TARGET%?}:8080"
+url = "http://${TARGET}:8080"
 [package]
 sources = [ "https://github.com/mesosphere/multiverse/archive/version-1.x.zip", "https://universe.mesosphere.com/repo",]
 cache = "/Users/nixlike/.dcos/cache"
@@ -29,4 +29,4 @@ EOF
   json=$(cat $input)
   export json
   DCOS_CONFIG=$CONFIG echo "$json" | dcos "$@"
-fi  
+fi

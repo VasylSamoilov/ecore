@@ -34,7 +34,18 @@ resource "aws_security_group" "mesos_master" {
       protocol = "tcp"
       cidr_blocks = ["${var.admin_location}"]
   }
-
+  ingress {
+      from_port = 0
+      to_port = 5050
+      protocol = "tcp"
+      cidr_blocks = ["${var.admin_location}"]
+  }
+  ingress {
+      from_port = 0
+      to_port = 8080
+      protocol = "tcp"
+      cidr_blocks = ["${var.admin_location}"]
+  }
   ingress {
       from_port = 0
       to_port = 0
@@ -98,6 +109,10 @@ resource "aws_instance" "mesos_all_in_one" {
     }
 }
 
-output "address" {
+output "master_private_address" {
     value = "${aws_instance.mesos_all_in_one.private_ip}"
+}
+
+output "master_public_address" {
+    value = "${aws_instance.mesos_all_in_one.public_ip}"
 }
