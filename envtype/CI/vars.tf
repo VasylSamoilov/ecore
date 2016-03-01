@@ -15,7 +15,7 @@ variable "core_region" {
 
 variable "mesos_all_in_one_ami" {
     type = "string"
-    default = "ami-bbb90bc8"
+    default = "ami-a10ab5d2"
 }
 
 variable "mesos_all_in_one_nstance_type" {
