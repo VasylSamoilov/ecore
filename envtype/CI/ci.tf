@@ -29,19 +29,19 @@ resource "aws_security_group" "mesos_master" {
   vpc_id = "${aws_vpc.mesos.id}"
 
   ingress {
-      from_port = 0
+      from_port = 22
       to_port = 22
       protocol = "tcp"
       cidr_blocks = ["${var.admin_location}"]
   }
   ingress {
-      from_port = 0
+      from_port = 5050
       to_port = 5050
       protocol = "tcp"
       cidr_blocks = ["${var.admin_location}"]
   }
   ingress {
-      from_port = 0
+      from_port = 8080
       to_port = 8080
       protocol = "tcp"
       cidr_blocks = ["${var.admin_location}"]
@@ -49,8 +49,8 @@ resource "aws_security_group" "mesos_master" {
   ingress {
       from_port = 0
       to_port = 0
-      protocol = "tcp"
-      self
+      protocol = "-1"
+      self = true
   }
 
   egress {
@@ -87,14 +87,14 @@ resource "aws_route_table_association" "pub_sub_route_a" {
     route_table_id = "${aws_route_table.r_pub_sub.id}"
 }
 
-resource "aws_instance" "mesos_all_in_one" {
+resource "aws_instance" "mesos_master" {
     ami = "${var.mesos_all_in_one_ami}"
     vpc_security_group_ids = ["${aws_security_group.mesos_master.id}"]
     instance_type = "${var.mesos_all_in_one_nstance_type}"
     key_name = "${aws_key_pair.deployer.key_name}"
     subnet_id= "${aws_subnet.sub_1.id}"
     associate_public_ip_address = "true"
-    user_data = "${file("../vagrant/user-data")}"
+    user_data = "${file("../../instancetype/master/user-data")}"
     provisioner "remote-exec" {
     inline = [
      "while [ ! -f /tmp/signal ]; do sleep 2; done"
@@ -105,14 +105,41 @@ resource "aws_instance" "mesos_all_in_one" {
         private_key = "${var.ssh_priv_key}"
     }
     tags {
-        Name = "Mesos all in one instance"
+        Name = "Mesos master"
+    }
+}
+
+resource "aws_instance" "mesos_slave" {
+    ami = "${var.mesos_all_in_one_ami}"
+    vpc_security_group_ids = ["${aws_security_group.mesos_master.id}"]
+    instance_type = "${var.mesos_all_in_one_nstance_type}"
+    key_name = "${aws_key_pair.deployer.key_name}"
+    subnet_id= "${aws_subnet.sub_1.id}"
+    associate_public_ip_address = "true"
+    user_data = "${file("../../instancetype/slave/user-data")}"
+    depends_on = ["aws_instance.mesos_master"]
+    provisioner "remote-exec" {
+    inline = [
+     "while [ ! -f /tmp/signal ]; do sleep 2; done"
+      ]
+    }
+    connection {
+        user = "core"
+        private_key = "${var.ssh_priv_key}"
+    }
+    tags {
+        Name = "Mesos slave"
     }
 }
 
 output "master_private_address" {
-    value = "${aws_instance.mesos_all_in_one.private_ip}"
+    value = "${aws_instance.mesos_master.private_ip}"
 }
 
 output "master_public_address" {
-    value = "${aws_instance.mesos_all_in_one.public_ip}"
+    value = "${aws_instance.mesos_master.public_ip}"
+}
+
+output "slave_public_address" {
+    value = "${aws_instance.mesos_slave.public_ip}"
 }
