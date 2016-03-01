@@ -11,22 +11,22 @@ describe command('docker run --rm -i --entrypoint bash -v $PWD:/tmp/validate nix
 end
 
 #User data validation
-describe command('docker run --rm -v $PWD/envtype/localdev/vagrant/user-data:/tmp/user_data -i --entrypoint coreos-cloudinit steigr/coreos -validate --from-file /tmp/user_data') do
+describe command('docker run --rm -v $PWD/envtype/vagrant/user-data:/tmp/user_data -i --entrypoint coreos-cloudinit steigr/coreos -validate --from-file /tmp/user_data') do
 	  its(:exit_status) { should eq 0 }
 end
 
 #Vagrant server cli syntax check
-describe command('docker run --rm -v $PWD/envtype/localdev/vagrant/cli:/tmp/validate -i --entrypoint shellcheck nixlike/buildcont:ubuntu-15.10 /tmp/validate') do
+describe command('docker run --rm -v $PWD/envtype/vagrant/cli:/tmp/validate -i --entrypoint shellcheck nixlike/buildcont:ubuntu-15.10 /tmp/validate') do
 	  its(:stdout) { should_not match /SC/ }
 end
 
 #Vagrant server cli linting
-describe command('docker run --rm -v $PWD/envtype/localdev/vagrant/cli:/tmp/validate -i --entrypoint bash nixlike/buildcont:ubuntu-15.10 -n /tmp/validate') do
+describe command('docker run --rm -v $PWD/envtype/vagrant/cli:/tmp/validate -i --entrypoint bash nixlike/buildcont:ubuntu-15.10 -n /tmp/validate') do
 	  its(:exit_status) { should eq 0 }
 end
 
 #Vagrant file syntax check
-describe command('docker run --rm -v $PWD/envtype/localdev/vagrant/Vagrantfile:/tmp/Vagrantfile -i --entrypoint ruby nixlike/buildcont:ubuntu-15.10 -c /tmp/Vagrantfile') do
+describe command('docker run --rm -v $PWD/envtype/vagrant/Vagrantfile:/tmp/Vagrantfile -i --entrypoint ruby nixlike/buildcont:ubuntu-15.10 -c /tmp/Vagrantfile') do
 	  its(:exit_status) { should eq 0 }
 end
 

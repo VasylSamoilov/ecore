@@ -29,6 +29,6 @@ end
 
 namespace :vagrant do
   task :all do
-	  sh "cd envtype/localdev/vagrant&&rake"
+	  sh "cd envtype/vagrant&&rake"
   end
 end

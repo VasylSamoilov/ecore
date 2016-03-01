@@ -94,7 +94,7 @@ resource "aws_instance" "mesos_all_in_one" {
     key_name = "${aws_key_pair.deployer.key_name}"
     subnet_id= "${aws_subnet.sub_1.id}"
     associate_public_ip_address = "true"
-    user_data = "${file("../localdev/vagrant/user-data")}"
+    user_data = "${file("../vagrant/user-data")}"
     provisioner "remote-exec" {
     inline = [
      "while [ ! -f /tmp/signal ]; do sleep 2; done"
