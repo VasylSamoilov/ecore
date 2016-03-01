@@ -13,6 +13,7 @@
             "guest_additions_mode": "disable",
             "guest_os_type": "Linux26_64",
             "hard_drive_interface": "sata",
+            "headless": "false",
             "http_directory": "files",
             "iso_checksum": "{{user `checksum`}}",
             "iso_checksum_type": "{{user `checksum_type`}}",
@@ -24,7 +25,6 @@
             "ssh_username": "core",
             "ssh_wait_timeout": "40m",
             "type": "virtualbox-iso",
-	    "headless":"false",
             "vboxmanage": [
                 [
                     "modifyvm",
@@ -43,6 +43,7 @@
             "vm_name": "coreos-{{user `channel`}}"
         },
         {
+            "ami_groups": "all",
             "ami_name": "coreos_mesos_master_slave_{{user `channel`}}_{{user `version`}}_{{isotime | clean_ami_name}}",
             "instance_type": "{{user `instance_type`}}",
             "region": "{{user `aws_region`}}",
@@ -58,9 +59,11 @@
                 "files/to_image/box/change_host_name.rb",
                 "files/to_image/box/configure_networks.rb"
             ],
+            "only": [
+                "virtualbox-iso"
+            ],
             "output": "./builds/{{.Provider}}/coreos-{{user `channel`}}.box",
             "type": "vagrant",
-	    "only": ["virtualbox-iso"],
             "vagrantfile_template": "files/to_image/box/Vagrantfile"
         }
     ],
