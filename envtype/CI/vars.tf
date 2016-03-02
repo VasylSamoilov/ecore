@@ -43,4 +43,8 @@ variable "ssh_priv_key" {
     default = "/Users/nixlike/.ssh/id_rsa_ACM.pem"
 }
 
+variable "token" {
+    type = "string"
+}
+
 

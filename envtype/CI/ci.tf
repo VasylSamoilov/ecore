@@ -87,6 +87,23 @@ resource "aws_route_table_association" "pub_sub_route_a" {
     route_table_id = "${aws_route_table.r_pub_sub.id}"
 }
 
+resource "template_file" "mesos_master_userdata" {
+    template = "${file("../../instancetype/master/user-data.tpl")}"
+
+    vars {
+        etcd_cluster_token = "${var.token}"
+    }
+}
+
+resource "template_file" "mesos_slave_userdata" {
+    template = "${file("../../instancetype/slave/user-data.tpl")}"
+
+    vars {
+        etcd_cluster_token = "${var.token}"
+    }
+
+}
+
 resource "aws_instance" "mesos_master" {
     ami = "${var.mesos_all_in_one_ami}"
     vpc_security_group_ids = ["${aws_security_group.mesos_master.id}"]
@@ -94,7 +111,7 @@ resource "aws_instance" "mesos_master" {
     key_name = "${aws_key_pair.deployer.key_name}"
     subnet_id= "${aws_subnet.sub_1.id}"
     associate_public_ip_address = "true"
-    user_data = "${file("../../instancetype/master/user-data")}"
+    user_data = "${template_file.mesos_master_userdata.rendered}"
     provisioner "remote-exec" {
     inline = [
      "while [ ! -f /tmp/signal ]; do sleep 2; done"
@@ -116,7 +133,7 @@ resource "aws_instance" "mesos_slave" {
     key_name = "${aws_key_pair.deployer.key_name}"
     subnet_id= "${aws_subnet.sub_1.id}"
     associate_public_ip_address = "true"
-    user_data = "${file("../../instancetype/slave/user-data")}"
+    user_data = "${template_file.mesos_slave_userdata.rendered}"
     depends_on = ["aws_instance.mesos_master"]
     provisioner "remote-exec" {
     inline = [
