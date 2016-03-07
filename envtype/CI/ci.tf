@@ -93,6 +93,7 @@ resource "template_file" "mesos_master_userdata" {
     vars {
         etcd_cluster_token = "${var.token}"
         default_role = "slave_public"
+	mesos_hostname = "${aws_elb.mesos-master.dns_name}"
     }
 }
 
@@ -101,6 +102,16 @@ resource "template_file" "mesos_slave_userdata" {
 
     vars {
         etcd_cluster_token = "${var.token}"
+    }
+
+}
+
+resource "template_file" "mesos_slave_public_userdata" {
+    template = "${file("../../instancetype/slave_public/user-data.tpl")}"
+
+    vars {
+        etcd_cluster_token = "${var.token}"
+        default_role = "slave_public"
     }
 
 }
@@ -121,8 +132,50 @@ resource "aws_autoscaling_group" "mesos_master" {
     max_size = 1
     min_size = 1
     load_balancers = ["${aws_elb.mesos-master.name}"]
+    lifecycle {
+      create_before_destroy = true
+    }
 }
 
+resource "aws_launch_configuration" "mesos_slave" {
+    name_prefix = "mesos_slave-"
+    image_id = "${var.mesos_all_in_one_ami}"
+    instance_type = "${var.mesos_all_in_one_nstance_type}"
+    key_name = "${aws_key_pair.deployer.key_name}"
+    user_data = "${template_file.mesos_slave_userdata.rendered}"
+    security_groups = ["${aws_security_group.mesos_master.id}"]
+    associate_public_ip_address = "true"
+}
+
+resource "aws_autoscaling_group" "mesos_slave" {
+    launch_configuration = "${aws_launch_configuration.mesos_slave.name}"
+    vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
+    max_size = 1
+    min_size = 1
+    lifecycle {
+      create_before_destroy = true
+    }
+}
+
+resource "aws_launch_configuration" "mesos_slave_public" {
+    name_prefix = "mesos_slave_public-"
+    image_id = "${var.mesos_all_in_one_ami}"
+    instance_type = "${var.mesos_all_in_one_nstance_type}"
+    key_name = "${aws_key_pair.deployer.key_name}"
+    user_data = "${template_file.mesos_slave_public_userdata.rendered}"
+    associate_public_ip_address = "true"
+    security_groups = ["${aws_security_group.mesos_master.id}"]
+}
+
+resource "aws_autoscaling_group" "mesos_slave_public" {
+    launch_configuration = "${aws_launch_configuration.mesos_slave_public.name}"
+    vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
+    max_size = 1
+    min_size = 1
+    lifecycle {
+      create_before_destroy = true
+    }
+}
 resource "aws_elb" "mesos-master" {
   subnets = ["${aws_subnet.sub_1.id}"]
   security_groups = ["${aws_security_group.mesos_master.id}"]
@@ -155,33 +208,7 @@ resource "aws_elb" "mesos-master" {
   }
 }
 
-resource "aws_instance" "mesos_slave" {
-    ami = "${var.mesos_all_in_one_ami}"
-    vpc_security_group_ids = ["${aws_security_group.mesos_master.id}"]
-    instance_type = "${var.mesos_all_in_one_nstance_type}"
-    key_name = "${aws_key_pair.deployer.key_name}"
-    subnet_id= "${aws_subnet.sub_1.id}"
-    associate_public_ip_address = "true"
-    user_data = "${template_file.mesos_slave_userdata.rendered}"
-    depends_on = ["aws_autoscaling_group.mesos_master"]
-    provisioner "remote-exec" {
-    inline = [
-     "while [ ! -f /tmp/signal ]; do sleep 2; done"
-      ]
-    }
-    connection {
-        user = "core"
-        private_key = "${var.ssh_priv_key}"
-    }
-    tags {
-        Name = "Mesos slave"
-    }
-}
 
 output "mesos-master-lb" {
     value = "${aws_elb.mesos-master.dns_name}"
-}
-
-output "slave_public_address" {
-    value = "${aws_instance.mesos_slave.public_ip}"
 }
