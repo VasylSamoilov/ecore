@@ -149,7 +149,7 @@ coreos:
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-slave
       ExecStartPre=-/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DEFAULT_ROLE=${default_role} -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DEFAULT_ROLE=${default_role} -e MESOS_HOSTNAME=${mesos_hostname} -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
   - name: instance-test.service
     command: start
     content: |

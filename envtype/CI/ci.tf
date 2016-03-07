@@ -41,6 +41,12 @@ resource "aws_security_group" "mesos_master" {
       cidr_blocks = ["${var.admin_location}"]
   }
   ingress {
+      from_port = 5051
+      to_port = 5051
+      protocol = "tcp"
+      cidr_blocks = ["${var.admin_location}"]
+  }
+  ingress {
       from_port = 8080
       to_port = 8080
       protocol = "tcp"
@@ -102,6 +108,7 @@ resource "template_file" "mesos_slave_userdata" {
 
     vars {
         etcd_cluster_token = "${var.token}"
+	mesos_hostname = "${aws_elb.mesos-master.dns_name}"
     }
 
 }
@@ -112,6 +119,7 @@ resource "template_file" "mesos_slave_public_userdata" {
     vars {
         etcd_cluster_token = "${var.token}"
         default_role = "slave_public"
+	mesos_hostname = "${aws_elb.mesos-master.dns_name}"
     }
 
 }
@@ -184,6 +192,13 @@ resource "aws_elb" "mesos-master" {
     instance_port = 5050
     instance_protocol = "http"
     lb_port = 5050
+    lb_protocol = "http"
+  }
+
+  listener {
+    instance_port = 5051
+    instance_protocol = "http"
+    lb_port = 5051
     lb_protocol = "http"
   }
 
