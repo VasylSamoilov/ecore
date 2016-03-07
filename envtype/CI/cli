@@ -3,7 +3,7 @@
 if [ -t 0 ]
  then
 
-  TARGET=$(terraform output|grep "master_public_address"|awk '{print $3}')
+  TARGET=$(terraform output|grep "mesos-master-lb"|awk '{print $3}')
   CONFIG=/tmp/cimesos.toml
 
   cat << EOF >$CONFIG

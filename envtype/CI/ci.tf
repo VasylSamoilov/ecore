@@ -92,6 +92,7 @@ resource "template_file" "mesos_master_userdata" {
 
     vars {
         etcd_cluster_token = "${var.token}"
+        default_role = "slave_public"
     }
 }
 
@@ -104,26 +105,54 @@ resource "template_file" "mesos_slave_userdata" {
 
 }
 
-resource "aws_instance" "mesos_master" {
-    ami = "${var.mesos_all_in_one_ami}"
-    vpc_security_group_ids = ["${aws_security_group.mesos_master.id}"]
+resource "aws_launch_configuration" "mesos_master" {
+    name_prefix = "mesos_master-"
+    image_id = "${var.mesos_all_in_one_ami}"
     instance_type = "${var.mesos_all_in_one_nstance_type}"
     key_name = "${aws_key_pair.deployer.key_name}"
-    subnet_id= "${aws_subnet.sub_1.id}"
-    associate_public_ip_address = "true"
     user_data = "${template_file.mesos_master_userdata.rendered}"
-    provisioner "remote-exec" {
-    inline = [
-     "while [ ! -f /tmp/signal ]; do sleep 2; done"
-      ]
-    }
-    connection {
-        user = "core"
-        private_key = "${var.ssh_priv_key}"
-    }
-    tags {
-        Name = "Mesos master"
-    }
+    associate_public_ip_address = "true"
+    security_groups = ["${aws_security_group.mesos_master.id}"]
+}
+
+resource "aws_autoscaling_group" "mesos_master" {
+    launch_configuration = "${aws_launch_configuration.mesos_master.name}"
+    vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
+    max_size = 1
+    min_size = 1
+    load_balancers = ["${aws_elb.mesos-master.name}"]
+}
+
+resource "aws_elb" "mesos-master" {
+  subnets = ["${aws_subnet.sub_1.id}"]
+  security_groups = ["${aws_security_group.mesos_master.id}"]
+
+  listener {
+    instance_port = 5050
+    instance_protocol = "http"
+    lb_port = 5050
+    lb_protocol = "http"
+  }
+
+  listener {
+    instance_port = 8080
+    instance_protocol = "http"
+    lb_port = 8080
+    lb_protocol = "http"
+  }
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 3
+    target = "HTTP:5050/"
+    interval = 30
+  }
+  cross_zone_load_balancing = "true"
+
+  tags {
+    Name = "mesos-master-lb"
+  }
 }
 
 resource "aws_instance" "mesos_slave" {
@@ -134,7 +163,7 @@ resource "aws_instance" "mesos_slave" {
     subnet_id= "${aws_subnet.sub_1.id}"
     associate_public_ip_address = "true"
     user_data = "${template_file.mesos_slave_userdata.rendered}"
-    depends_on = ["aws_instance.mesos_master"]
+    depends_on = ["aws_autoscaling_group.mesos_master"]
     provisioner "remote-exec" {
     inline = [
      "while [ ! -f /tmp/signal ]; do sleep 2; done"
@@ -149,12 +178,8 @@ resource "aws_instance" "mesos_slave" {
     }
 }
 
-output "master_private_address" {
-    value = "${aws_instance.mesos_master.private_ip}"
-}
-
-output "master_public_address" {
-    value = "${aws_instance.mesos_master.public_ip}"
+output "mesos-master-lb" {
+    value = "${aws_elb.mesos-master.dns_name}"
 }
 
 output "slave_public_address" {
