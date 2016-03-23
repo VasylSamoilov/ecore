@@ -103,6 +103,7 @@ coreos:
       Restart=always
       TimeoutStartSec=1m
       TimeoutStopSec=10s
+      ExecStartPre=-/usr/bin/docker cp /home/core/openvpn.conf openvpn:/etc/openvpn/openvpn.conf
       ExecStart=/usr/bin/docker run --name openvpnd --rm --volumes-from openvpn -p 1194:1194/udp --cap-add=NET_ADMIN nixlike/openvpn
 write_files:
 - path: "/etc/systemd/coredump.conf"
@@ -142,4 +143,46 @@ write_files:
   content: |
     {{range getvs "/mesos-master/*"}}{{ $ip := split (.) ":" }}nameserver {{index $ip 0}}
     {{end}}
+- path: "/opt/etc/confd/conf.d/openvpn.toml"
+  permissions: '0644'
+  owner: root
+  content: |
+    [template]
+    src = "openvpn.conf.tmpl"
+    dest = "/home/core/openvpn.conf"
+    uid = 0
+    gid = 0
+    mode = "0644"
+    keys = [
+     "/mesos-master"
+    ]
+    reload_cmd = "docker cp /home/core/openvpn.conf openvpnd:/etc/openvpn/openvpn.conf&&docker stop openvpnd"
+- path: "/opt/etc/confd/templates/openvpn.conf.tmpl"
+  permissions: '0644'
+  owner: root
+  content: |
+    server 192.168.255.0 255.255.255.0
+    verb 3
+    key /etc/openvpn/pki/private/$public_ipv4.key
+    ca /etc/openvpn/pki/ca.crt
+    cert /etc/openvpn/pki/issued/$public_ipv4.crt
+    dh /etc/openvpn/pki/dh.pem
+    tls-auth /etc/openvpn/pki/ta.key
+    key-direction 0
+    keepalive 10 60
+    persist-key
+    persist-tun
+
+    proto udp
+    # Rely on Docker to do port mapping, internally always 1194
+    port 1194
+    dev tun0
+    status /tmp/openvpn-status.log
+
+    user nobody
+    group nogroup
+    {{range getvs "/mesos-master/*"}}{{ $ip := split (.) ":" }}push "dhcp-option DNS {{index $ip 0}}"
+    {{end}}
+    push "route $private_ipv4 255.255.0.0"
+    route 192.168.254.0 255.255.255.0
 manage_etc_hosts: localhost
