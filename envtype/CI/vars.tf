@@ -47,4 +47,13 @@ variable "token" {
     type = "string"
 }
 
+variable "ssh_user" {
+    type = "string"
+    default = "core"
+}
+
+variable "admin_download_folder" {
+    type = "string"
+    default = "/Users/nixlike/Downloads"
+}
 

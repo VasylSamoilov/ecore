@@ -53,6 +53,12 @@ resource "aws_security_group" "mesos_master" {
       cidr_blocks = ["${var.admin_location}"]
   }
   ingress {
+      from_port = 1194
+      to_port = 1194
+      protocol = "udp"
+      cidr_blocks = ["${var.admin_location}"]
+  }
+  ingress {
       from_port = 0
       to_port = 0
       protocol = "-1"
@@ -122,6 +128,48 @@ resource "template_file" "mesos_slave_public_userdata" {
 	mesos_hostname = "${aws_elb.mesos-master.dns_name}"
     }
 
+}
+
+resource "template_file" "vpnserver_userdata" {
+    template = "${file("../../instancetype/vpnserver/user-data.tpl")}"
+
+    vars {
+        etcd_cluster_token = "${var.token}"
+    }
+
+}
+
+resource "aws_instance" "vpnserver" {
+    ami = "${var.mesos_all_in_one_ami}"
+    instance_type = "t2.nano"
+    key_name = "${aws_key_pair.deployer.key_name}"
+    security_groups = ["${aws_security_group.mesos_master.id}"]
+    subnet_id = "${aws_subnet.sub_1.id}"
+    user_data = "${template_file.vpnserver_userdata.rendered}"
+    associate_public_ip_address = "true"
+    provisioner "remote-exec" {
+    connection {
+        timeout = "15m"
+        user = "core"
+        private_key = "${var.ssh_priv_key}"
+    }
+        inline = [
+	"until docker port openvpnd; do sleep 5; done",
+        "docker run --volumes-from openvpn --rm nixlike/openvpn easyrsa build-client-full ADMIN nopass",
+        "docker run --volumes-from openvpn --rm nixlike/openvpn ovpn_getclient ADMIN > ADMIN.ovpn"
+        ]
+    }
+    provisioner "local-exec" {
+    connection {
+        timeout = "15m"
+        user = "core"
+        private_key = "${var.ssh_priv_key}"
+    }
+        command = "scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${var.ssh_priv_key} core@${aws_instance.vpnserver.public_ip}:ADMIN* ${var.admin_download_folder}"
+    }
+    tags {
+        Name = "VpnServer"
+    }
 }
 
 resource "aws_launch_configuration" "mesos_master" {
@@ -226,4 +274,7 @@ resource "aws_elb" "mesos-master" {
 
 output "mesos-master-lb" {
     value = "${aws_elb.mesos-master.dns_name}"
+}
+output "vpnserver-public_ip" {
+    value = "${aws_instance.vpnserver.public_ip}"
 }
