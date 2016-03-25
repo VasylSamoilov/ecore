@@ -7,7 +7,7 @@ coreos:
     initial-advertise-peer-urls: http://$private_ipv4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
-    discovery: https://discovery.etcd.io/d829b4c7349fe77af57d0a458fb70a9e
+    discovery: https://discovery.etcd.io/832404db1a06f7be9856edee64cb5f97
   units:
   - name: update-engine.service
     command: stop

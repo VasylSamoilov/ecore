@@ -35,24 +35,6 @@ resource "aws_security_group" "mesos_master" {
       cidr_blocks = ["${var.admin_location}"]
   }
   ingress {
-      from_port = 5050
-      to_port = 5050
-      protocol = "tcp"
-      cidr_blocks = ["${var.admin_location}"]
-  }
-  ingress {
-      from_port = 5051
-      to_port = 5051
-      protocol = "tcp"
-      cidr_blocks = ["${var.admin_location}"]
-  }
-  ingress {
-      from_port = 8080
-      to_port = 8080
-      protocol = "tcp"
-      cidr_blocks = ["${var.admin_location}"]
-  }
-  ingress {
       from_port = 1194
       to_port = 1194
       protocol = "udp"
@@ -185,8 +167,8 @@ resource "aws_launch_configuration" "mesos_master" {
 resource "aws_autoscaling_group" "mesos_master" {
     launch_configuration = "${aws_launch_configuration.mesos_master.name}"
     vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
-    max_size = 1
-    min_size = 1
+    max_size = "${var.mesos_m_autoscaling_size}"
+    min_size = "${var.mesos_m_autoscaling_size}"
     load_balancers = ["${aws_elb.mesos-master.name}"]
     lifecycle {
       create_before_destroy = true
@@ -206,8 +188,8 @@ resource "aws_launch_configuration" "mesos_slave" {
 resource "aws_autoscaling_group" "mesos_slave" {
     launch_configuration = "${aws_launch_configuration.mesos_slave.name}"
     vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
-    max_size = 1
-    min_size = 1
+    max_size = "${var.mesos_s_autoscaling_size}"
+    min_size = "${var.mesos_s_autoscaling_size}"
     lifecycle {
       create_before_destroy = true
     }
@@ -226,13 +208,14 @@ resource "aws_launch_configuration" "mesos_slave_public" {
 resource "aws_autoscaling_group" "mesos_slave_public" {
     launch_configuration = "${aws_launch_configuration.mesos_slave_public.name}"
     vpc_zone_identifier = ["${aws_subnet.sub_1.id}"]
-    max_size = 1
-    min_size = 1
+    max_size = "${var.mesos_s_p_autoscaling_size}"
+    min_size = "${var.mesos_s_p_autoscaling_size}"
     lifecycle {
       create_before_destroy = true
     }
 }
 resource "aws_elb" "mesos-master" {
+  internal = "true"
   subnets = ["${aws_subnet.sub_1.id}"]
   security_groups = ["${aws_security_group.mesos_master.id}"]
 

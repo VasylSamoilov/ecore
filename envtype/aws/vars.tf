@@ -15,7 +15,7 @@ variable "core_region" {
 
 variable "mesos_all_in_one_ami" {
     type = "string"
-    default = "ami-a10ab5d2"
+    default = "ami-938a0de0"
 }
 
 variable "mesos_all_in_one_nstance_type" {
@@ -57,3 +57,17 @@ variable "admin_download_folder" {
     default = "/Users/nixlike/Downloads"
 }
 
+variable "mesos_m_autoscaling_size" {
+    type = "string"
+    default = "1"
+}
+
+variable "mesos_s_autoscaling_size" {
+    type = "string"
+    default = "0"
+}
+
+variable "mesos_s_p_autoscaling_size" {
+    type = "string"
+    default = "0"
+}

@@ -121,7 +121,7 @@ coreos:
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-master
       ExecStartPre=-/usr/bin/mkdir /tmp/mesos
-      ExecStart=/usr/bin/docker run --net=host -v /tmp/mesos/:/tmp/mesos/ -e "MESOS_REGISTRY=in_memory" -e MESOS_ROLES="slave_public,*" -e "MESOS_LOG_DIR=/tmp/mesos" -e MESOS_HOSTNAME=${mesos_hostname} -e MESOS_IP=$private_ipv4 -e MESOS_QUORUM=2 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
+      ExecStart=/usr/bin/docker run --net=host -v /tmp/mesos/:/tmp/mesos/ -e "MESOS_REGISTRY=in_memory" -e MESOS_ROLES="slave_public,*" -e "MESOS_LOG_DIR=/tmp/mesos" -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_QUORUM=2 -e MESOS_ZK=zk://$private_ipv4:2181/mesos --rm=true --name mesos-master -p 5050:5050 mesoscloud/mesos-master:0.24.1-ubuntu-14.04
   - name: marathon.service
     command: start
     content: |
@@ -134,7 +134,7 @@ coreos:
       Restart=always
       TimeoutSec=1min
       ExecStartPre=-/usr/bin/docker rm marathon
-      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$private_ipv4 -e MARATHON_MESOS_ROLE=slave_public -e MARATHON_HOSTNAME=${mesos_hostname} -e MARATHON_HTTPS_ADDRESS=$private_ipv4 -e MARATHON_HTTP_ADDRESS=$private_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon -e MARATHON_RECONCILIATION_INITIAL_DELAY=300000 -e MARATHON_SCALE_APPS_INITIAL_DELAY=300000 -e MARATHON_TASK_LAUNCH_TIMEOUT=300000 -e MARATHON_TASK_LAUNCH_CONFIRM_TIMEOUT=300000 --rm=true --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
+      ExecStart=/usr/bin/docker run --net=host -e LIBPROCESS_IP=$private_ipv4 -e MARATHON_MESOS_ROLE=slave_public -e MARATHON_HOSTNAME=$private_ipv4 -e MARATHON_HTTPS_ADDRESS=$private_ipv4 -e MARATHON_HTTP_ADDRESS=$private_ipv4 -e MARATHON_MASTER=zk://$private_ipv4:2181/mesos -e MARATHON_ZK=zk://$private_ipv4:2181/marathon -e MARATHON_RECONCILIATION_INITIAL_DELAY=300000 -e MARATHON_SCALE_APPS_INITIAL_DELAY=300000 -e MARATHON_TASK_LAUNCH_TIMEOUT=300000 -e MARATHON_TASK_LAUNCH_CONFIRM_TIMEOUT=300000 --rm=true --name marathon mesoscloud/marathon:0.11.0-ubuntu-15.04
   - name: mesos-slave.service
     command: start
     content: |
@@ -149,7 +149,7 @@ coreos:
       TimeoutStopSec=3s
       ExecStartPre=-/usr/bin/docker rm mesos-slave
       ExecStartPre=-/bin/docker pull nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
-      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DEFAULT_ROLE=${default_role} -e MESOS_HOSTNAME=${mesos_hostname} -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
+      ExecStart=/usr/bin/docker run --privileged --net=host -e LIBPROCESS_IP=$private_ipv4 -e MESOS_DEFAULT_ROLE=${default_role} -e MESOS_HOSTNAME=$private_ipv4 -e MESOS_IP=$private_ipv4 -e MESOS_MASTER=zk://$private_ipv4:2181/mesos -v /sys/fs/cgroup:/sys/fs/cgroup -v /var/run/docker.sock:/var/run/docker.sock --rm=true --name mesos-slave -p 5050:5050 nixlike/mesos-slave:mesos-0.24.1_docker-1.10.0
   - name: instance-test.service
     command: start
     content: |

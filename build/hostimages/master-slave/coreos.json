@@ -106,6 +106,13 @@
                 "scripts/get_artifacts.sh"
             ],
             "type": "shell"
+        },
+        {
+            "only": [
+                "amazon-ebs"
+            ],
+	    "inline": ["rm -rf /home/core/.ssh"],
+            "type": "shell"
         }
     ]
 }
