@@ -137,6 +137,9 @@ Vagrant.configure("2") do |config|
         config.vm.provision :file, :source => "#{CLOUD_CONFIG_PATH}", :destination => "/tmp/vagrantfile-user-data"
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
         config.vm.provision :shell, :inline => "while [ ! -f /tmp/signal ]; do sleep 2; done"
+        config.vm.provision :shell, :inline => "until docker port openvpnd; do sleep 5; done"
+        config.vm.provision :shell, :inline => "docker run --volumes-from openvpn --rm nixlike/openvpn easyrsa build-client-full ADMIN nopass"
+        config.vm.provision :shell, :inline => "docker run --volumes-from openvpn --rm nixlike/openvpn ovpn_getclient ADMIN > share/ADMIN.ovpn"
       end
 
     end
