@@ -1,8 +1,6 @@
 # ECORE
 Full featured Mesos sandbox
 
-___
-
 ###Objectives
 
 * The easiest way to learn, rollout and maintain mesos platform
@@ -51,9 +49,7 @@ git clone git@github.com:nixlike/ecore.git
 ### For Vagrant Local environment
 
 1. Run  
-```
-$cd envtype/vagrant/ && vagrant up  
-```
+`$cd envtype/vagrant/ && vagrant up  `
 
 2. Wait until the instance up up
 
