@@ -54,7 +54,7 @@ variable "ssh_user" {
 
 variable "admin_download_folder" {
     type = "string"
-    default = "/Users/nixlike/Downloads"
+    default = "/tmp"
 }
 
 variable "mesos_m_autoscaling_size" {
