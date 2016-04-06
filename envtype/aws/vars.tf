@@ -71,3 +71,8 @@ variable "mesos_s_p_autoscaling_size" {
     type = "string"
     default = "0"
 }
+
+variable "enable_spinnaker" {
+    type = "string"
+    default = "false"
+}

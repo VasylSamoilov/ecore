@@ -78,7 +78,7 @@ Urls: [http://master.mesos:8080](http://master.mesos:8080) and [http://master.me
 $ cd envtype/vagrant/
 $ ./cli --help
 ```
-### For AWS
+### For AWS (use eu-west-1 region, since ami created there as of now!)
 
 1. Run  
 `$cd ecore/envtype/aws/ && make apply`  
